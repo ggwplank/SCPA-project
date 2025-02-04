@@ -83,15 +83,3 @@ void process_directory(const char *input_folder, const char *output_filename) {
     closedir(dir);
     fclose(output_file);
 }
-
-int main(int argc, char *argv[]) {
-    if (argc < 3) {
-        printf("Uso: %s <cartella_matrici> <output_file>\n", argv[0]);
-        return 1;
-    }
-    
-    srand(time(NULL)); // Inizializza il generatore di numeri casuali
-    process_directory(argv[1], argv[2]);
-    
-    return 0;
-}
