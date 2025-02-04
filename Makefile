@@ -10,7 +10,7 @@ LIB_DIR = lib
 SOURCES = $(wildcard $(SRC_DIR)/*.c) $(LIB_DIR)/mmio.c
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(wildcard $(SRC_DIR)/*.c)) $(OBJ_DIR)/mmio.o
 
-EXECUTABLE = sparse_matrix
+EXECUTABLE = exec
 
 all: $(EXECUTABLE)
 
