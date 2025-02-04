@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "reader.h"
 #include "csr.h"
 #include "vector_generator.h"
 
-#define VECTOR_FILE "cose/random_vectors.txt"
+#define EPSILON 1e-6
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -13,9 +14,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const char *matrix_filename = argv[1];
-    const char *matrix_name = strrchr(matrix_filename, '/');
-    matrix_name = (matrix_name) ? matrix_name + 1 : matrix_filename;
+    const char *matrix_filename = argv[1];  // --> dir/file.mtx
+    const char *matrix_name = strrchr(matrix_filename, '/'); // --> /file.mtx
+    matrix_name = (matrix_name) ? matrix_name + 1 : matrix_filename; // --> file.mtx
 
     int M, N, NZ;
     MatrixEntry *entries;
@@ -37,26 +38,59 @@ int main(int argc, char *argv[]) {
     // printf("\nRow Ptr: ");
     // for (int i = 0; i <= A->rows; i++) printf("%d ", A->row_ptr[i]);
 
-    printf("\n");
-
     // Allocare il vettore risultato y
-    double *y = (double *)malloc(M * sizeof(double));
+    double *y_serial = (double *)malloc(M * sizeof(double));
+    if (!y_serial) {
+        perror("Errore di allocazione per il vettore risultato seriale");
+        free_CSR(A);
+        free(entries);
+        free(x);
+        exit(1);
+    }
+
+    double *y_parallel = (double *)malloc(M * sizeof(double));
+    if (!y_parallel) {
+        perror("Errore di allocazione per il vettore risultato parallelo");
+        free_CSR(A);
+        free(entries);
+        free(x);
+        free(y_serial);
+        exit(1);
+    }
 
     // Calcolare il prodotto matrice-vettore
-    csr_matrix_vector_multiply(A, x, y);
+    serial_csr_matrix_vector_multiply(A, x, y_serial);
+    omp_csr_matrix_vector_multiply(A, x, y_parallel);
+
+    int correct = 1;
+    for (int i = 0; i < M; i++) {
+        if (fabs(y_serial[i] - y_parallel[i]) > EPSILON) {
+            correct = 0;
+            printf("Differenza rilevata all'indice %d: seriale=%lf, parallelo=%lf\n",
+                   i, y_serial[i], y_parallel[i]);
+        }
+    }
+
+    if (correct) {
+        printf("I risultati seriale e parallelo sono uguali\n");
+    } else {
+        printf("I risultati seriale e parallelo sono diversi\n");
+    }
+    
 
     // Stampare il risultato
-    printf("Risultato del prodotto matrice-vettore:\n");
-    for (int i = 0; i < M; i++)
-        printf("%lf ", y[i]);
+    // printf("\nRisultato del prodotto matrice-vettore:\n");
+    // for (int i = 0; i < M; i++)
+    //     printf("%lf ", y_serial[i]);
     
-    printf("\n");
+    // printf("\n");
 
     // Liberare la memoria
     free_CSR(A);
     free(entries);
     free(x);
-    free(y);
+    free(y_serial);
+    free(y_parallel);
 
     return 0;
 }

@@ -77,8 +77,17 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
     return A;
 }
 
+void serial_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
+    for (int i = 0; i < A->rows; i++) {
+        y[i] = 0.0;
+        for (int j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++) {
+            y[i] += A->values[j] * x[A->col_indices[j]];
+        }
+    }
+}
+
 // prodotto matrice-vettore con OpenMP
-void csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
+void omp_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
     #pragma omp parallel for schedule(dynamic, 3)
     for (int i = 0; i < A->rows; i++) {
         y[i] = 0.0;

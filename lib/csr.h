@@ -19,6 +19,7 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries);
 void free_CSR(CSRMatrix *A);
 
 // Funzione per il prodotto matrice-vettore
-void csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y);
+void serial_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y);
+void omp_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y);
 
 #endif
