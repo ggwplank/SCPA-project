@@ -3,7 +3,7 @@
 #include <string.h>
 #include "reader.h"
 #include "csr.h"
-#include "vector_reader.h"
+#include "vector_generator.h"
 
 #define VECTOR_FILE "cose/random_vectors.txt"
 
@@ -26,33 +26,18 @@ int main(int argc, char *argv[]) {
     CSRMatrix *A = convert_to_CSR(M, N, NZ, entries);
     
     double *x = NULL;
-    int x_size = 0;
-
-    if(!read_vector_from_file(VECTOR_FILE, matrix_name, &x, &x_size)) {
-        printf("Errore nella lettura del vettore\n");
-        return 1;
-    }
+    generate_random_vector(matrix_name, N, &x);
     
-    if(x_size != N+1) {
-        printf("Il vettore letto ha dimensione %d, diversa dalla dimensione della matrice %d\n", x_size, N);
-        return 1;
-    }
+    // printf("Formato CSR:\nValori: ");
+    // for (int i = 0; i < A->nnz; i++) printf("%lf ", A->values[i]);
 
-    printf("Formato CSR:\nValori: ");
-    for (int i = 0; i < A->nnz; i++) printf("%lf ", A->values[i]);
+    // printf("\nColonne: ");
+    // for (int i = 0; i < A->nnz; i++) printf("%d ", A->col_indices[i]);
 
-    printf("\nColonne: ");
-    for (int i = 0; i < A->nnz; i++) printf("%d ", A->col_indices[i]);
-
-    printf("\nRow Ptr: ");
-    for (int i = 0; i <= A->rows; i++) printf("%d ", A->row_ptr[i]);
+    // printf("\nRow Ptr: ");
+    // for (int i = 0; i <= A->rows; i++) printf("%d ", A->row_ptr[i]);
 
     printf("\n");
-
-    // // Allocare e inizializzare il vettore x
-    // double *x = (double *)malloc(N * sizeof(double));
-    // for (int i = 0; i < N; i++)
-    //     x[i] = 1.0; // Esempio: vettore di tutti 1
 
     // Allocare il vettore risultato y
     double *y = (double *)malloc(M * sizeof(double));
