@@ -26,7 +26,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/mmio.o: $(LIB_DIR)/mmio.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -w -c $< -o $@
 
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
