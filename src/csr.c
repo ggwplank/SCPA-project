@@ -17,11 +17,12 @@ int compare_entries(const void *a, const void *b) {
 
 // conversione matrice da formato MatrixEntry (riga, colonna, valore) in formato CSR
 CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
-    qsort(entries, NZ, sizeof(MatrixEntry), compare_entries);   // PROBLEMA? qsort() è O(NlogN), un radix sort forse più efficiente?
+    qsort(entries, NZ, sizeof(MatrixEntry), compare_entries);
 
     CSRMatrix *A = (CSRMatrix *)malloc(sizeof(CSRMatrix));
     if (!A) {
         printf("Errore di allocazione per la matrice CSR\n");
+        free_CSR(A);
         exit(1);
     }
 
@@ -36,8 +37,6 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
         printf("Errore di allocazione per gli array CSR\n");
         exit(1);
     }
-
-    //TODO SE UNA DELLE ALLOCAZIONI FALLISCE, IL PROGRAMMA ESCE CON ERRORE: LIBERARE LA MEMORIA GIA' ALLOCATA PRIMA DI USCIRE
 
     // inizializza tutti gli elementi di row_ptr a 0
     for (int i = 0; i <= M; i++)
