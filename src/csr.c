@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 #include "csr.h"
 
 // nel CSR gli elementi devono essere memorizzati riga per riga
@@ -76,8 +77,9 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
     return A;
 }
 
-// Funzione per il prodotto matrice-vettore
+// prodotto matrice-vettore con OpenMP
 void csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
+    #pragma omp parallel for schedule(dynamic, 3)
     for (int i = 0; i < A->rows; i++) {
         y[i] = 0.0;
         for (int j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++) {
@@ -86,7 +88,6 @@ void csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
     }
 }
 
-// Libera la memoria della matrice CSR
 void free_CSR(CSRMatrix *A) {
     if (A) {
         free(A->values);

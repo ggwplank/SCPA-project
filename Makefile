@@ -6,15 +6,20 @@ SRC_DIR = src
 OBJ_DIR = obj
 LIB_DIR = lib
 
-# Prende tutti i file .c da src/ e aggiunge manualmente mmio.c da lib/
 SOURCES = $(wildcard $(SRC_DIR)/*.c) $(LIB_DIR)/mmio.c
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(wildcard $(SRC_DIR)/*.c)) $(OBJ_DIR)/mmio.o
 
 EXECUTABLE = exec
+OPENMP_EXECUTABLE = exec_omp
 
 all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+$(OPENMP_EXECUTABLE): CFLAGS += -fopenmp
+$(OPENMP_EXECUTABLE): LDFLAGS += -fopenmp
+$(OPENMP_EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
@@ -27,9 +32,12 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 clean:
-	rm -rf $(OBJ_DIR) $(EXECUTABLE)
+	rm -rf $(OBJ_DIR) $(EXECUTABLE) $(OPENMP_EXECUTABLE)
 
 run: $(EXECUTABLE)
-	./$(EXECUTABLE) $(MAT)
+	./$(EXECUTABLE) .matrices/$(MAT)
+
+run_openmp: $(OPENMP_EXECUTABLE)
+	./$(OPENMP_EXECUTABLE) .matrices/$(MAT)
 
 .PHONY: all clean
