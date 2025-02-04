@@ -1,0 +1,1 @@
+int read_vector_from_file(const char *filename, const char *matrix_name, double **vector, int *size);
