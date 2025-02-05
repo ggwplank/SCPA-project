@@ -1,4 +1,8 @@
 .vscode/
 .matrices/
+
 openmp/obj/
+openmp/exec
+openmp/exec_omp
+
 cuda/build/
