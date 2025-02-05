@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
-#include "csr.h"
+#include "csr_cuda.h"
 
 // Kernel CUDA per il prodotto matrice-vettore CSR
 __global__ void csr_matrix_vector_multiply_cuda(int rows, int *d_row_ptr, int *d_col_indices, double *d_values, double *d_x, double *d_y) {

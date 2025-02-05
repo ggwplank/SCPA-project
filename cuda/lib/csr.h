@@ -20,6 +20,5 @@ void free_CSR(CSRMatrix *A);
 
 // Funzione per il prodotto matrice-vettore
 void serial_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y);
-void omp_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y);
 
 #endif

@@ -5,10 +5,8 @@
 #include "reader.h"
 #include "csr.h"
 #include "matrix_operations.h"
+#include "csr_cuda.h"
 
-#ifdef CUDA_ENABLED
-    #include "csr_cuda.h"
-#endif
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -46,19 +44,14 @@ int main(int argc, char *argv[]) {
         free(x);
         return 1;
     }
+    printf("Eseguo il prodotto matrice-vettore con CUDA...\n");
+    cuda_csr_matrix_vector_multiply(A, x, y);
 
-    #ifdef CUDA_ENABLED
-        printf("Eseguo il prodotto matrice-vettore con CUDA...\n");
-        cuda_csr_matrix_vector_multiply(A, x, y);
-
-        printf("Risultato (prime 5 componenti):\n");
-        for (int i = 0; i < (M < 5 ? M : 5); i++) {
-            printf("%lf ", y[i]);
-        }
-        printf("\n");
-    #else 
-        multiply_and_compare(A, x, M);
-    #endif
+    printf("Risultato (prime 5 componenti):\n");
+    for (int i = 0; i < (M < 5 ? M : 5); i++) {
+        printf("%lf ", y[i]);
+    }
+    printf("\n");
 
     free(y);
     free_CSR(A);
