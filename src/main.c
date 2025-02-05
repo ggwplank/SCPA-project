@@ -6,6 +6,10 @@
 #include "csr.h"
 #include "matrix_operations.h"
 
+#ifdef CUDA_ENABLED
+    #include "csr_cuda.h"
+#endif
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         printf("Uso: %s <file_matrix_market>\n", argv[0]);
@@ -34,8 +38,29 @@ int main(int argc, char *argv[]) {
     // printf("\nRow Ptr: ");
     // for (int i = 0; i <= A->rows; i++) printf("%d ", A->row_ptr[i]);
 
-    multiply_and_compare(A, x, M);
+    double *y = (double *)malloc(M * sizeof(double));
+    if (!y) {
+        printf("Errore di allocazione per y\n");
+        free_CSR(A);
+        free(entries);
+        free(x);
+        return 1;
+    }
 
+    #ifdef CUDA_ENABLED
+        printf("Eseguo il prodotto matrice-vettore con CUDA...\n");
+        cuda_csr_matrix_vector_multiply(A, x, y);
+
+        printf("Risultato (prime 5 componenti):\n");
+        for (int i = 0; i < (M < 5 ? M : 5); i++) {
+            printf("%lf ", y[i]);
+        }
+        printf("\n");
+    #else 
+        multiply_and_compare(A, x, M);
+    #endif
+
+    free(y);
     free_CSR(A);
     free(entries);
     free(x);
