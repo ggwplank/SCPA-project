@@ -1,6 +1,5 @@
 .PHONY: all clean run_cuda cmake
 
-# Directory di build
 BUILD_DIR = build
 
 all: cmake
