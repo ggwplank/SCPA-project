@@ -3,6 +3,7 @@
 #include <math.h>
 #include "reader.h"
 #include "csr.h"
+#include "csr_cuda.h"
 #include "vector_generator.h"
 
 #define EPSILON 1e-6
@@ -54,7 +55,7 @@ void multiply_and_compare(CSRMatrix *A, double *x, int M) {
     }
 
     serial_csr_matrix_vector_multiply(A, x, y_serial);
-
+    cuda_csr_matrix_vector_multiply(A, x, y_parallel);
     compare_results(y_serial, y_parallel, M);
 
     free(y_serial);

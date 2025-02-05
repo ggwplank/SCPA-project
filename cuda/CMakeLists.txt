@@ -17,13 +17,13 @@ include_directories(include lib)
 # List source files explicitly
 set(SOURCES
     src/csr.c
-    src/matrix_operations.c
     src/mtx_reader.c
     src/vector_generator.c
     lib/mmio.c
 )
 
 set(CUDA_SOURCES
+    src/matrix_operations.cu
     src/csr_cuda.cu
     src/main.cu
 )

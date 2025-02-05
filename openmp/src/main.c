@@ -34,19 +34,9 @@ int main(int argc, char *argv[]) {
     // printf("\nRow Ptr: ");
     // for (int i = 0; i <= A->rows; i++) printf("%d ", A->row_ptr[i]);
 
-    double *y = (double *)malloc(M * sizeof(double));
-    if (!y) {
-        printf("Errore di allocazione per y\n");
-        free_CSR(A);
-        free(entries);
-        free(x);
-        return 1;
-    }
-
     multiply_and_compare(A, x, M);
 
 
-    free(y);
     free_CSR(A);
     free(entries);
     free(x);

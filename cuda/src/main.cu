@@ -36,24 +36,10 @@ int main(int argc, char *argv[]) {
     // printf("\nRow Ptr: ");
     // for (int i = 0; i <= A->rows; i++) printf("%d ", A->row_ptr[i]);
 
-    double *y = (double *)malloc(M * sizeof(double));
-    if (!y) {
-        printf("Errore di allocazione per y\n");
-        free_CSR(A);
-        free(entries);
-        free(x);
-        return 1;
-    }
+
     printf("Eseguo il prodotto matrice-vettore con CUDA...\n");
-    cuda_csr_matrix_vector_multiply(A, x, y);
+    multiply_and_compare(A, x, M);
 
-    printf("Risultato (prime 5 componenti):\n");
-    for (int i = 0; i < (M < 5 ? M : 5); i++) {
-        printf("%lf ", y[i]);
-    }
-    printf("\n");
-
-    free(y);
     free_CSR(A);
     free(entries);
     free(x);
