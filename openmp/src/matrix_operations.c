@@ -18,20 +18,28 @@ void generate_vector(const char *matrix_name, int size, double **vector) {
     generate_random_vector(matrix_name, size, vector);
 }
 
-void compare_results(double *y_serial, double *y_parallel, int size) {
+void compare_results(const double *y_serial, const double *y_parallel, int size) {
     int correct = 1;
+    double max_rel_diff = 0.0;
+
     for (int i = 0; i < size; i++) {
-        if (fabs(y_serial[i] - y_parallel[i]) > EPSILON) {
+        double abs_diff = fabs(y_serial[i] - y_parallel[i]);
+        double max_val = fmax(fabs(y_serial[i]), fabs(y_parallel[i]));
+        double rel_diff = (max_val == 0) ? 0.0 : abs_diff / max_val;
+
+        max_rel_diff = fmax(max_rel_diff, rel_diff);
+
+        if (abs_diff > EPSILON) {
             correct = 0;
-            printf("Differenza rilevata all'indice %d: seriale=%lf, parallelo=%lf\n",
-                   i, y_serial[i], y_parallel[i]);
+            printf("Differenza rilevata all'indice %d: seriale=%lf, parallelo=%lf (rel_diff=%lf)\n",
+                   i, y_serial[i], y_parallel[i], rel_diff);
         }
     }
 
     if (correct)
         printf("I risultati seriale e parallelo sono uguali\n");
     else
-        printf("I risultati seriale e parallelo sono diversi\n");
+        printf("I risultati seriale e parallelo sono diversi (max rel diff: %lf)\n", max_rel_diff);
     
 }
 
@@ -41,6 +49,7 @@ void multiply_and_compare(CSRMatrix *A, double *x, int M) {
         perror("Errore di allocazione per il vettore risultato seriale");
         free_CSR(A);
         free(x);
+        free(y_serial);
         exit(1);
     }
 
