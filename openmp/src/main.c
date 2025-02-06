@@ -28,17 +28,16 @@ int main(int argc, char *argv[]) {
 
     CSRMatrix *A = convert_to_CSR(M, N, NZ, entries);
 
-    //ELLMatrix *A;
-    //read_and_convert_matrix_to_ellpack(matrix_filename, &A, &M, &N, &NZ, &entries);
+    ELLPackMatrix *A_ellpack = convert_to_ELL(M, N, NZ, entries);
     
     double *x = NULL;
     generate_random_vector(matrix_name, M, &x);
 
-    // for (int i = 0; i < A->M; i++) {
+    // for (int i = 0; i < A_ellpack->rows; i++) {
     //     printf("Riga %d: ", i);
-    //     for (int j = 0; j < A->NZ / A->M; j++) {  // Al massimo, ogni riga ha max_row_length non-zeri
-    //         if (A->columns[i][j] != -1) {  // Se la colonna è valida (non -1)
-    //             printf("(Colonna: %d, Valore: %f) ", A->columns[i][j], A->values[i][j]);
+    //     for (int j = 0; j < A_ellpack->nnz / A_ellpack->rows; j++) {  // Al massimo, ogni riga ha max_row_length non-zeri
+    //         if (A_ellpack->col_indices[i][j] != -1) {  // Se la colonna è valida (non -1)
+    //             printf("(Colonna: %d, Valore: %f) ", A_ellpack->col_indices[i][j], A_ellpack->values[i][j]);
     //         }
     //     }
     //     printf("\n");
@@ -58,11 +57,12 @@ int main(int argc, char *argv[]) {
     serial_csr_mult(A, x, y_serial);
 
     if (strcmp(mode, "-serial") == 0) {
-        // stampa dei primi valori del seriale
-        printf("Primi 10 valori del seriale: ");
+        printf("Primi 10 valori risultato moltiplicazione seriale: ");
         for (int i = 0; i < 10; i++) 
             printf("%f ", y_serial[i]);
         printf("\n");
+
+        free(y_serial);
     }
 
     else if (strcmp(mode, "-ompCSR") == 0) {
@@ -78,15 +78,17 @@ int main(int argc, char *argv[]) {
         double *y_omp_hll = allocate_result(M);
 
         omp_set_num_threads(num_threads);
-        // omp_hll_mult(A, x, y_omp_hll);
+        omp_hll_mult(A_ellpack, x, y_omp_hll);
 
-        // compare_results(y_serial, y_omp_hll, M);
+        compare_results(y_serial, y_omp_hll, M);
+    }
+
+    else {
+        printf("Le possibili modalità sono: -serial, -ompCSR, -ompHLL\n");
     }
     
-    else
-        printf("Le possibili modalità sono: -serial, -ompCSR, -ompHLL\n");
-    
     free_CSR(A);
+    free_ELL(A_ellpack);
     free(entries);
     free(x);
     

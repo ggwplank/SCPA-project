@@ -38,15 +38,19 @@ void free_CSR(CSRMatrix *A);
 // ------ ELL -------
 
 typedef struct {
-    int M;          // Numero di righe
-    int N;          // Numero di colonne
-    int NZ;         // Numero di elementi non nulli
-    double **values;   // Valori degli elementi non nulli
-    int **columns;     // Indici delle colonne degli elementi non nulli
-} ELLMatrix;
+    int rows;         
+    int cols;          
+    int nnz; 
+    int maxnz;
+    int **col_indices;
+    double **values;
+} ELLPackMatrix;
 
-void read_and_convert_matrix_to_ellpack(const char *matrix_filename, ELLMatrix **A, int *M, int *N, int *NZ, MatrixEntry **entries);
-ELLMatrix* convert_to_ELL(int M, int N, int NZ, MatrixEntry *entries, int max_nonzeros_in_row);
+ELLPackMatrix* convert_to_ELL(int M, int N, int NZ, MatrixEntry *entries);
+
+void omp_hll_mult(ELLPackMatrix *A, double *x, double *y);
+
+void free_ELL(ELLPackMatrix *A);
 
 
 
