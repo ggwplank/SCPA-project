@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "mmio.h"
-#include "reader.h"
+#include "utils.h"
 
 void read_matrix_market(const char *filename, int *M, int *N, int *NZ, MatrixEntry **entries) {
     FILE *f;

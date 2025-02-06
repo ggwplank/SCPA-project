@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "reader.h"
-#include "csr.h"
-#include "matrix_operations.h"
+
+#include "utils.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -18,23 +17,27 @@ int main(int argc, char *argv[]) {
 
     int M, N, NZ;
     MatrixEntry *entries;
-    //CSRMatrix *A;
-    ELLMatrix *A;
 
-    //read_and_convert_matrix(matrix_filename, &A, &M, &N, &NZ, &entries);
-    read_and_convert_matrix_to_ellpack(matrix_filename, &A, &M, &N, &NZ, &entries);
+    read_matrix_market(matrix_filename, &M, &N, &NZ, &entries);
+    printf("Matrice %dx%d, nonzeri: %d\n", M, N, NZ);
+
+    CSRMatrix *A = convert_to_CSR(M, N, NZ, entries);
+
+    //ELLMatrix *A;
+    //read_and_convert_matrix_to_ellpack(matrix_filename, &A, &M, &N, &NZ, &entries);
+    
     double *x = NULL;
-    generate_vector(matrix_name, M, &x);
+    generate_random_vector(matrix_name, M, &x);
 
-    for (int i = 0; i < A->M; i++) {
-        printf("Riga %d: ", i);
-        for (int j = 0; j < A->NZ / A->M; j++) {  // Al massimo, ogni riga ha max_row_length non-zeri
-            if (A->columns[i][j] != -1) {  // Se la colonna è valida (non -1)
-                printf("(Colonna: %d, Valore: %f) ", A->columns[i][j], A->values[i][j]);
-            }
-        }
-        printf("\n");
-    }
+    // for (int i = 0; i < A->M; i++) {
+    //     printf("Riga %d: ", i);
+    //     for (int j = 0; j < A->NZ / A->M; j++) {  // Al massimo, ogni riga ha max_row_length non-zeri
+    //         if (A->columns[i][j] != -1) {  // Se la colonna è valida (non -1)
+    //             printf("(Colonna: %d, Valore: %f) ", A->columns[i][j], A->values[i][j]);
+    //         }
+    //     }
+    //     printf("\n");
+    // }
 
 
     // printf("Formato CSR:\nValori: ");
@@ -46,10 +49,15 @@ int main(int argc, char *argv[]) {
     // printf("\nRow Ptr: ");
     // for (int i = 0; i <= A->rows; i++) printf("%d ", A->row_ptr[i]);
 
-    //multiply_and_compare(A, x, M);
+    double *y_serial = allocate_result(M);
+    serial_csr_mult(A, x, y_serial);
 
+    double *y_omp_csr = allocate_result(M);
+    omp_csr_mult(A, x, y_omp_csr);
+    
+    compare_results(y_serial, y_omp_csr, M);
 
-    //free_CSR(A);
+    free_CSR(A);
     free(entries);
     free(x);
     

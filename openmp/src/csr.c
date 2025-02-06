@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#include "csr.h"
+
+#include "utils.h"
 
 // nel CSR gli elementi devono essere memorizzati riga per riga
 int compare_entries(const void *a, const void *b) {
@@ -16,7 +17,7 @@ int compare_entries(const void *a, const void *b) {
     return entryA->row - entryB->row;
 }
 
-// conversione matrice da formato MatrixEntry (riga, colonna, valore) in formato CSR
+// Funzione che converte una matrice da formato MatrixEntry (r, c, v) in formato CSR
 CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
     qsort(entries, NZ, sizeof(MatrixEntry), compare_entries);
 
@@ -30,6 +31,7 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
     A->rows = M;
     A->cols = N;
     A->nnz = NZ;
+
     A->values = (double *)malloc(NZ * sizeof(double));  // memorizza i valori non nulli
     A->col_indices = (int *)malloc(NZ * sizeof(int));   // indici di colonna dei valori non nulli
     A->row_ptr = (int *)malloc((M + 1) * sizeof(int));  // offset di inizio di ogni riga
@@ -77,7 +79,7 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
     return A;
 }
 
-void serial_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
+void serial_csr_mult(CSRMatrix *A, double *x, double *y) {
     for (int i = 0; i < A->rows; i++) {
         y[i] = 0.0;
         for (int j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++) {
@@ -87,7 +89,7 @@ void serial_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
 }
 
 // prodotto matrice-vettore con OpenMP
-void omp_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
+void omp_csr_mult(CSRMatrix *A, double *x, double *y) {
     #pragma omp parallel for schedule(dynamic, 3)
     for (int i = 0; i < A->rows; i++) {
         y[i] = 0.0;
