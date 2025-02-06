@@ -23,7 +23,7 @@ find_package(CUDA REQUIRED)
 set(CMAKE_C_STANDARD 11)
 
 # Imposta i flag di compilazione per C e CUDA
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -03")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -O3")
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O3")
 
 # La directory per gli header

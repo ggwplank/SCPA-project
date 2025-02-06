@@ -19,5 +19,5 @@ fi
 cd ..
 
 # Usage: (DALLA ROOT DEL PROGETTO, NON DALLA CARTELLA openmp)
-# ./build.sh run matrice.mtx
-# ./build.sh run_openmp matrice.mtx
+# ./omp.sh run matrice.mtx
+# ./omp.sh run_openmp matrice.mtx
