@@ -18,13 +18,25 @@ int main(int argc, char *argv[]) {
 
     int M, N, NZ;
     MatrixEntry *entries;
-    CSRMatrix *A;
+    //CSRMatrix *A;
+    ELLMatrix *A;
 
-    read_and_convert_matrix(matrix_filename, &A, &M, &N, &NZ, &entries);
-    
+    //read_and_convert_matrix(matrix_filename, &A, &M, &N, &NZ, &entries);
+    read_and_convert_matrix_to_ellpack(matrix_filename, &A, &M, &N, &NZ, &entries);
     double *x = NULL;
     generate_vector(matrix_name, M, &x);
-    
+
+    for (int i = 0; i < A->M; i++) {
+        printf("Riga %d: ", i);
+        for (int j = 0; j < A->NZ / A->M; j++) {  // Al massimo, ogni riga ha max_row_length non-zeri
+            if (A->columns[i][j] != -1) {  // Se la colonna è valida (non -1)
+                printf("(Colonna: %d, Valore: %f) ", A->columns[i][j], A->values[i][j]);
+            }
+        }
+        printf("\n");
+    }
+
+
     // printf("Formato CSR:\nValori: ");
     // for (int i = 0; i < A->nnz; i++) printf("%lf ", A->values[i]);
 
@@ -34,10 +46,10 @@ int main(int argc, char *argv[]) {
     // printf("\nRow Ptr: ");
     // for (int i = 0; i <= A->rows; i++) printf("%d ", A->row_ptr[i]);
 
-    multiply_and_compare(A, x, M);
+    //multiply_and_compare(A, x, M);
 
 
-    free_CSR(A);
+    //free_CSR(A);
     free(entries);
     free(x);
     

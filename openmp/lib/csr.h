@@ -22,4 +22,12 @@ void free_CSR(CSRMatrix *A);
 void serial_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y);
 void omp_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y);
 
+typedef struct {
+    int M;          // Numero di righe
+    int N;          // Numero di colonne
+    int NZ;         // Numero di elementi non nulli
+    double **values;   // Valori degli elementi non nulli
+    int **columns;     // Indici delle colonne degli elementi non nulli
+} ELLMatrix;
+
 #endif
