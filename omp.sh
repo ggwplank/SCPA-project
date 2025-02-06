@@ -8,16 +8,16 @@ make clean
 
 echo ">>> Building..."
 if [[ "$1" == "run" ]]; then
-    make run MAT="$2"
+    make run MAT="$2" MODE="$3"
 elif [[ "$1" == "run_openmp" ]]; then
-    make run_openmp MAT="$2"
+    make run_openmp MAT="$2" MODE="$3" THREADS="$4"
 else
-    echo "Usage: $0 [run|run_openmp] nome.mtx"
+    echo "Usage: $0 [run|run_openmp] matrix.mtx mode {num_threads}"
     exit 1
 fi
 
 cd ..
 
 # Usage: (DALLA ROOT DEL PROGETTO, NON DALLA CARTELLA openmp)
-# ./omp.sh run matrice.mtx
-# ./omp.sh run_openmp matrice.mtx
+# ./omp.sh run matrix.mtx mode
+# ./omp.sh run_openmp matrix.mtx mode num_threads
