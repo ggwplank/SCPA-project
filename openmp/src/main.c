@@ -77,10 +77,18 @@ int main(int argc, char *argv[]) {
     else if (strcmp(mode, "-ompHLL") == 0) {
         double *y_omp_hll = allocate_result(M);
 
+        int hack_size = 32;
+        HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
+
+        print_HLL(A_hll);
+
         omp_set_num_threads(num_threads);
-        omp_hll_mult(A_ellpack, x, y_omp_hll);
+        //omp_ellpack_mult(A_ellpack, x, y_omp_hll);
+        omp_hll_mult(A_hll, x, y_omp_hll);
 
         compare_results(y_serial, y_omp_hll, M);
+
+        free_HLL(A_hll);
     }
 
     else {

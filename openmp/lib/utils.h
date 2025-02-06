@@ -48,9 +48,29 @@ typedef struct {
 
 ELLPackMatrix* convert_to_ELL(int M, int N, int NZ, MatrixEntry *entries);
 
-void omp_hll_mult(ELLPackMatrix *A, double *x, double *y);
+void omp_ellpack_mult(ELLPackMatrix *A, double *x, double *y);
 
 void free_ELL(ELLPackMatrix *A);
+
+void print_ELL(ELLPackMatrix *A);
+
+
+
+// ------ HLL -------
+
+typedef struct {
+    int num_blocks;        // Numero di blocchi
+    int hack_size;         // Numero di righe per blocco
+    ELLPackMatrix **blocks; // Array di puntatori ai blocchi ELLPack
+} HLLMatrix;
+
+HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_size);
+
+void omp_hll_mult(HLLMatrix *H, double *x, double *y);
+
+void free_HLL(HLLMatrix *H);
+
+void print_HLL(HLLMatrix *H);
 
 
 

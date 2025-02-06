@@ -31,3 +31,14 @@
 - [ ] Studiare CMake e l'indicizzazione dei thread in CUDA
 - [ ] Allocare memoria sulla GPU per CUDA
 - [ ] Gestire la memoria sulla CPU per OpenMP
+
+
+
+## HLL
+Il formato HLL è una variante ottimizzata di ELLPack, che divide la matrice in blocchi di righe per migliorare l'accesso alla memoria e la parallelizzazione.
+Le idee chiave sono:
+
+1. Si sceglie un HackSize → Ad esempio, 32 righe per blocco.
+2. Si suddivide la matrice in blocchi di HackSize righe ciascuno.
+3. Ogni blocco viene memorizzato in formato ELLPack, quindi avrà il proprio maxnz.
+4. La struttura dati deve gestire più blocchi, quindi avremo un array di blocchi.
