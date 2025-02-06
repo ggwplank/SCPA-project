@@ -33,6 +33,8 @@ include_directories(lib)
 # Definizione dei file sorgente in C
 set(SOURCES
     src/csr.c
+    src/ellpack.c
+    src/hll.c
     src/mtx_reader.c
     src/vector_generator.c
     lib/mmio.c
@@ -40,7 +42,7 @@ set(SOURCES
 
 # Definizione dei file CUDA
 set(CUDA_SOURCES
-    src/matrix_operations.cu
+    src/res_utils.cu
     src/csr_cuda.cu
     src/main.cu
 )

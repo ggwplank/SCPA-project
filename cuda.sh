@@ -8,13 +8,13 @@ make clean
 
 echo ">>> Building..."
 if [[ "$1" == "run_cuda" ]]; then
-    make run_cuda MAT="$2"
+    make run_cuda MAT="$2" MODE="$3"
 else
-    echo "Usage: $0 [run_cuda] nome.mtx"
+    echo "Usage: $0 run_cuda matrix.mtx mode"
     exit 1
 fi
 
 cd ..
 
 # Usage: (DALLA ROOT DEL PROGETTO, NON DALLA CARTELLA cuda)
-# ./cuda.sh run_cuda matrice.mtx
+# ./cuda.sh run_cuda matrice.mtx mode

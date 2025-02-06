@@ -12,4 +12,4 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 run_cuda: cmake
-	./$(BUILD_DIR)/exec_cuda ../.matrices/$(MAT)
+	./$(BUILD_DIR)/exec_cuda ../.matrices/$(MAT) $(MODE)

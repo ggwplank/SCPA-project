@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
-#include "csr_cuda.h"
+
+#include "utils.h"
 
 // Kernel CUDA per il prodotto matrice-vettore CSR
-__global__ void csr_matrix_vector_multiply_cuda(int rows, int *d_row_ptr, int *d_col_indices, double *d_values, double *d_x, double *d_y) {
+__global__ void csr_mult_cuda_kernel(int rows, int *d_row_ptr, int *d_col_indices, double *d_values, double *d_x, double *d_y) {
     int row = blockIdx.x * blockDim.x + threadIdx.x;  // Ogni thread processa una riga
     if (row < rows) {
         double sum = 0.0;
@@ -15,7 +16,7 @@ __global__ void csr_matrix_vector_multiply_cuda(int rows, int *d_row_ptr, int *d
     }
 }
 
-void cuda_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
+void cuda_csr_mult(CSRMatrix *A, double *x, double *y) {
     int *d_row_ptr, *d_col_indices;
     double *d_values, *d_x, *d_y;
 
@@ -35,7 +36,7 @@ void cuda_csr_matrix_vector_multiply(CSRMatrix *A, double *x, double *y) {
     // 3. Configurazione e lancio del kernel CUDA
     int blockSize = 256;  // Numero di thread per blocco
     int gridSize = (A->rows + blockSize - 1) / blockSize;  // Numero di blocchi
-    csr_matrix_vector_multiply_cuda<<<gridSize, blockSize>>>(A->rows, d_row_ptr, d_col_indices, d_values, d_x, d_y);
+    csr_mult_cuda_kernel<<<gridSize, blockSize>>>(A->rows, d_row_ptr, d_col_indices, d_values, d_x, d_y);
 
     // 4. Copia il risultato dalla GPU alla CPU
     cudaMemcpy(y, d_y, A->rows * sizeof(double), cudaMemcpyDeviceToHost);
