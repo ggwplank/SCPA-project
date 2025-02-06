@@ -26,6 +26,8 @@ int main(int argc, char *argv[]) {
     printf("Matrice %dx%d, nonzeri: %d\n", M, N, NZ);
 
     CSRMatrix *A = convert_to_CSR(M, N, NZ, entries);
+
+    ELLPackMatrix *A_ellpack = convert_to_ELL(M, N, NZ, entries);
     
     double *x = NULL;
     generate_random_vector(matrix_name, M, &x);
@@ -61,18 +63,18 @@ int main(int argc, char *argv[]) {
     }
 
     else if (strcmp(mode, "-cudaHLL") == 0) {
-        // double *y_cuda_hll = allocate_result(M);
+        double *y_cuda_hll = allocate_result(M);
 
-        // int hack_size = 32;
-        // HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
+        int hack_size = 32;
+        HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
 
-        // print_HLL(A_hll);
+        print_HLL(A_hll);
 
-        // cuda_hll_mult(A_hll, x, y_cuda_hll);
+        cuda_hll_mult(A_hll, x, y_cuda_hll);
 
         // compare_results(y_serial, y_cuda_hll, M);
 
-        // free_HLL(A_hll);
+        free_HLL(A_hll);
     }
 
     else {
@@ -80,6 +82,7 @@ int main(int argc, char *argv[]) {
     }
 
     free_CSR(A);
+    free_ELL(A_ellpack);
     free(entries);
     free(x);
     
