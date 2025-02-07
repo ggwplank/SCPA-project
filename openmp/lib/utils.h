@@ -76,7 +76,7 @@ void print_HLL(HLLMatrix *H);
 
 // ------ Matrix operations ------
 
-void compare_results(double *y_serial, double *y_parallel, int size);
+void compare_results(double *y_serial, double *y_parallel, int size, int *passed, double *diff, double *rel_diff);
 double * allocate_result(int M);
 
 

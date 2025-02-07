@@ -4,5 +4,6 @@
 openmp/obj/
 openmp/exec
 openmp/exec_omp
+openmp/performance.csv
 
 cuda/build/
