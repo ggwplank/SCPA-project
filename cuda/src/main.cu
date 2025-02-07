@@ -4,7 +4,6 @@
 #include <math.h>
 
 #include "utils.h"
-#include "csr_cuda.h"
 
 
 int main(int argc, char *argv[]) {
@@ -72,7 +71,7 @@ int main(int argc, char *argv[]) {
 
         cuda_hll_mult(A_hll, x, y_cuda_hll);
 
-        // compare_results(y_serial, y_cuda_hll, M);
+        compare_results(y_serial, y_cuda_hll, M);
 
         free_HLL(A_hll);
     }

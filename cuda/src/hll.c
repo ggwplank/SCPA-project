@@ -43,17 +43,11 @@ HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_s
     return hll;
 }
 
-void cuda_hll_mult(HLLMatrix *H, double *x, double *y) {
-    printf("cuda_hll_mult è DA IMPLEMENTARE\n");
-}
-// NOTA: Iteriamo sui blocchi, non sulle righe come facevamo con ELLPack
-
 void free_HLL(HLLMatrix *H) {
     for (int b = 0; b < H->num_blocks; b++) {
         free_ELL(H->blocks[b]);
     }
     free(H->blocks);
-    free(H);
 }
 
 void print_HLL(HLLMatrix *H) {
