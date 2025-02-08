@@ -46,8 +46,6 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < 10; i++) 
             printf("%f ", y_serial[i]);
         printf("\n");
-
-        free(y_serial);
     }
 
     else if (strcmp(mode, "-ompCSR") == 0) {
@@ -59,6 +57,8 @@ int main(int argc, char *argv[]) {
             A, x, y_omp_csr,
             matrix_name, M, N, NZ,
             mode, num_threads, y_serial);
+
+        free(y_omp_csr);
     }
 
     else if (strcmp(mode, "-ompHLL") == 0) {
@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
             mode, num_threads, y_serial);
     
         free_HLL(A_hll);
+        free(y_omp_hll);
     }
 
     else {
@@ -86,6 +87,7 @@ int main(int argc, char *argv[]) {
     
     free_CSR(A);
     //free_ELL(A_ellpack);
+    free(y_serial);
     free(entries);
     free(x);
     

@@ -7,7 +7,9 @@
 
 #define PERFORMANCE_FILE "performance.csv"
 #define REPETITIONS 1024
-#define EPSILON 1e-6
+#define REL_TOL 1e-6
+#define ABS_TOL 1e-9
+
 
 
 // ------- Matrix generation -------
@@ -36,6 +38,7 @@ typedef struct {
 CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries);
 
 void serial_csr_mult(CSRMatrix *A, double *x, double *y);
+
 void omp_csr_mult(CSRMatrix *A, double *x, double *y);
 
 void free_CSR(CSRMatrix *A);

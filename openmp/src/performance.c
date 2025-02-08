@@ -30,9 +30,6 @@ void save_results_to_csv(const char *filename, const char *matrix_name,
     char *dot = strrchr(matrix_name, '.'); // remove the extension
     if (dot) *dot = '\0';
 
-    threads = (threads > omp_get_max_threads()) ? omp_get_max_threads() : threads;
-    printf("Threads: %d\n", threads);
-
     fprintf(file, "%s,%d,%d,%d,%s,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%d,%.6f,%.6f,%d\n",
             matrix_name, M, N, NZ, mode, threads, time_ms, median_time_ms, flops, mflops, gflops, flops_median, mflops_median, gflops_median, passed, diff, rel_diff, iterations);
 
