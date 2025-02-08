@@ -69,7 +69,7 @@ typedef struct {
 
 HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_size);
 
-void cuda_hll_mult(ELLPackMatrix *H, double *x, double *y);
+void matvec_hll_cuda(HLLMatrix *H, double *x, double *y);
 
 void free_HLL(HLLMatrix *H);
 

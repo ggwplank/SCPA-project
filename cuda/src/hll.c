@@ -20,7 +20,6 @@ HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_s
     
     // Converti ogni blocco in formato ELLPack
     for (int b = 0; b < num_blocks; b++) {
-        printf("Converting block %d of %d\n", b, num_blocks);
         int start_row = b * hack_size;
         int block_rows = (start_row + hack_size <= M) ? hack_size : (M - start_row);
 
@@ -42,7 +41,7 @@ HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_s
         // Se ci sono elementi nel blocco, convertili in formato ELL
         if (block_nz > 0) {
             hll->blocks[b] = convert_to_ELL(block_rows, N, block_nz, block_entries);
-            transpose_ELLPack(hll->blocks[b]);  // Trasposta del blocco
+            // transpose_ELLPack(hll->blocks[b]);  // Trasposta del blocco, vedi main
         } else {
             hll->blocks[b] = NULL;  // Se il blocco è vuoto, settiamo il puntatore a NULL
         }
@@ -72,3 +71,26 @@ void print_HLL(HLLMatrix *H) {
     //     print_ELL(H->blocks[b]);
     // }
 }
+
+// idea: si potrebbe creare un kernel cuda che faccia questo lavoro da solo, con un for si calcola un blocco alla volta e questo ci rallenta molto
+// possiamo creare tutti quanti i pezzi qui e poi passarli al kernel per fare il ciclo direttamente da li dentro
+void matvec_hll_cuda(HLLMatrix *H, double *x, double *y) {
+    for (int b = 0; b < H->num_blocks; b++) {
+        ELLPackMatrix *block = H->blocks[b];
+        if (block == NULL) continue;  // Se il blocco è vuoto, salta questo blocco
+        int block_rows = block->rows;
+        int start_row = b * H->hack_size;
+        double *block_y = (double*)malloc(block_rows * sizeof(double));
+
+        // Computa il prodotto matrice-vettore per il blocco
+        matvec_ellpack_cuda(block, x, block_y);
+
+        // Aggiungi i risultati del blocco nel vettore y
+        for (int i = 0; i < block_rows; i++) {
+            y[start_row + i] += block_y[i];
+        }
+
+        free(block_y);
+    }
+}
+
