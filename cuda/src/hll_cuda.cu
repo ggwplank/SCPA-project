@@ -1,118 +1,76 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <cuda_runtime.h>
+#include <stdio.h>
 
 #include "utils.h"
 
-// Kernel CUDA per il prodotto matrice-vettore con il formato HLL
-__global__ void hll_mult_cuda_kernel(int num_blocks, int hack_size, 
-                                     int *d_block_row_ptrs, int *d_block_col_indices, 
-                                     double *d_block_values, double *d_x, double *d_y) {
-    // Ogni thread calcola il valore di una riga globale della matrice
-    int global_row = blockIdx.x * blockDim.x + threadIdx.x;  
-    if (global_row >= num_blocks * hack_size) return; // Se fuori dai limiti, termina
-
-    // Determina a quale blocco appartiene la riga attuale
-    int block_id = global_row / hack_size;  // Blocchi organizzati in ordine sequenziale
-    int local_row = global_row % hack_size; // Riga all'interno del blocco
-
-    // Recupera il numero massimo di elementi non nulli per riga in questo blocco
-    int maxnz = d_block_row_ptrs[block_id * (hack_size + 1) + hack_size];
-
-    double sum = 0.0;
-    for (int j = 0; j < maxnz; j++) {
-        // Calcola l'indice globale degli elementi del blocco
-        int index = block_id * hack_size * maxnz + local_row * maxnz + j;
-        int col = d_block_col_indices[index]; // Ottiene la colonna corrispondente
-        if (col != -1) { // Se la colonna è valida, effettua il calcolo
-            sum += d_block_values[index] * d_x[col];
-        }
-    }
-    d_y[global_row] = sum; // Memorizza il risultato nel vettore di output
-}
-
-// Funzione host per eseguire il prodotto matrice-vettore in formato HLL
-void cuda_hll_mult(HLLMatrix *H, double *x, double *y) {
-    int num_blocks = H->num_blocks; // Numero di blocchi nella matrice
-    int hack_size = H->hack_size;   // Numero massimo di righe per blocco
-    int total_rows = num_blocks * hack_size; // Numero totale di righe nella matrice
-
-    // Dichiarazione dei puntatori per la memoria sulla GPU
-    int *d_block_row_ptrs, *d_block_col_indices;
-    double *d_block_values, *d_x, *d_y;
-
-    // Allocazione della memoria per il vettore di input e output
-    cudaMalloc((void **)&d_x, H->blocks[0]->cols * sizeof(double));
-    cudaMalloc((void **)&d_y, total_rows * sizeof(double));
-
-    // Assumiamo che tutti i blocchi abbiano lo stesso maxnz
-    int maxnz = H->blocks[0]->maxnz;
-
-    // Allocazione della memoria per la rappresentazione della matrice HLL
-    cudaMalloc((void **)&d_block_row_ptrs, num_blocks * (hack_size + 1) * sizeof(int));
-    cudaMalloc((void **)&d_block_col_indices, num_blocks * hack_size * maxnz * sizeof(int));
-    cudaMalloc((void **)&d_block_values, num_blocks * hack_size * maxnz * sizeof(double));
-
-    // Copia del vettore x nella memoria della GPU
-    cudaMemcpy(d_x, x, H->blocks[0]->cols * sizeof(double), cudaMemcpyHostToDevice);
-
-    // Allocazione della memoria temporanea sulla CPU per organizzare i dati
-    int *h_block_row_ptrs = (int *)malloc(num_blocks * (hack_size + 1) * sizeof(int));
-    int *h_block_col_indices = (int *)malloc(num_blocks * hack_size * maxnz * sizeof(int));
-    double *h_block_values = (double *)malloc(num_blocks * hack_size * maxnz * sizeof(double));
-
-    // Preparazione dei dati per la GPU
-    for (int b = 0; b < num_blocks; b++) {
-        ELLPackMatrix *block = H->blocks[b]; // Ottiene il blocco corrente
-
-        for (int i = 0; i < hack_size; i++) {
-            // Memorizza il numero massimo di elementi non nulli per riga
-            h_block_row_ptrs[b * (hack_size + 1) + i] = (i < block->rows) ? block->maxnz : 0;
-
-            for (int j = 0; j < maxnz; j++) {
-                int idx = b * hack_size * maxnz + i * maxnz + j;
-                
-                // Se la riga è valida, copia gli indici delle colonne e i valori
-                if (i < block->rows) {
-                    h_block_col_indices[idx] = block->col_indices[i][j];
-                    h_block_values[idx] = block->values[i][j];
-                } else { 
-                    // Se la riga è fuori dai limiti del blocco, assegna valori di default
-                    h_block_col_indices[idx] = -1;
-                    h_block_values[idx] = 0.0;
-                }
+__global__ void matvec_kernel(double *values, int *col_indices, double *x, double *y, int rows, int maxnz) {
+    int row = blockIdx.x * blockDim.x + threadIdx.x;
+    if (row < rows) {
+        double sum = 0.0;
+        for (int j = 0; j < maxnz; j++) {
+            int col = col_indices[j * rows + row];  // Lettura coalescente
+            if (col >= 0) {
+                sum += values[j * rows + row] * x[col];
             }
         }
-        // Imposta maxnz per il blocco attuale
-        h_block_row_ptrs[b * (hack_size + 1) + hack_size] = maxnz;
+        y[row] = sum;
+    }
+}
+    
+void matvec_ellpack_cuda(ELLPackMatrix *A, double *x, double *y) {
+    // Debug: Stampa della matrice ELLPack
+    int M = A->rows;
+    double *d_values, *d_x, *d_y;
+    int *d_col_indices, *d_maxnz;
+    int maxnz = A->maxnz;
+    
+
+    // Conversione da doppio puntatore a array contiguo per GPU
+    double* h_values_flat = new double[M * maxnz];
+    int* h_col_indices_flat = new int[M * maxnz];
+
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < maxnz; j++) {
+            h_values_flat[i + j * M] = A->values[i][j];
+            h_col_indices_flat[i + j * M] = A->col_indices[i][j];
+        }
     }
 
-    // Copia i dati della matrice nella memoria della GPU
-    cudaMemcpy(d_block_row_ptrs, h_block_row_ptrs, num_blocks * (hack_size + 1) * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_block_col_indices, h_block_col_indices, num_blocks * hack_size * maxnz * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_block_values, h_block_values, num_blocks * hack_size * maxnz * sizeof(double), cudaMemcpyHostToDevice);
+    // Calcola la dimensione della memoria da allocare per la matrice e il vettore
+    int size_values = A->rows * A->maxnz * sizeof(double);  // memoria per i valori della matrice
+    int size_col_indices = A->rows * A->maxnz * sizeof(int); // memoria per gli indici delle colonne
 
-    // Configurazione dei thread e dei blocchi
-    int blockSize = 256;  // Numero di thread per blocco
-    int gridSize = (total_rows + blockSize - 1) / blockSize;  // Numero di blocchi
+    // Allocazione della memoria sulla GPU
+    cudaMalloc((void **)&d_maxnz, size_values);          // numero massimo di elementi non nulli per riga
+    cudaMalloc((void **)&d_values, size_values);          // Matrice valori
+    cudaMalloc((void **)&d_col_indices, size_col_indices); // Indici colonna
+    cudaMalloc((void **)&d_x, A->cols * sizeof(double));   // Vettore di input x
+    cudaMalloc((void **)&d_y, A->rows * sizeof(double));   // Vettore di output y
 
-    // Lancio del kernel CUDA per il calcolo parallelo
-    hll_mult_cuda_kernel<<<gridSize, blockSize>>>(num_blocks, hack_size, 
-                                                  d_block_row_ptrs, d_block_col_indices, 
-                                                  d_block_values, d_x, d_y);
+    // Copia dei dati dalla memoria host alla memoria device
+    cudaMemcpy(d_maxnz, &maxnz, sizeof(int), cudaMemcpyHostToDevice); // Copia del numero massimo di elementi non nulli per riga
+    cudaMemcpy(d_values, h_values_flat, size_values, cudaMemcpyHostToDevice); // Copia di tutta la matrice dei valori
+    cudaMemcpy(d_col_indices, h_col_indices_flat, size_col_indices, cudaMemcpyHostToDevice); // Copia degli indici delle colonne
+    cudaMemcpy(d_x, x, A->cols * sizeof(double), cudaMemcpyHostToDevice); // Copia del vettore x
 
-    // Copia il risultato del calcolo dalla GPU alla CPU
-    cudaMemcpy(y, d_y, total_rows * sizeof(double), cudaMemcpyDeviceToHost);
 
-    // Pulizia della memoria sulla GPU
-    cudaFree(d_block_row_ptrs);
-    cudaFree(d_block_col_indices);
-    cudaFree(d_block_values);
+    // Lancio del kernel CUDA
+    int block_size = 256; // Numero di thread per blocco
+    int num_blocks = (A->rows + block_size - 1) / block_size; // Numero di blocchi necessari
+    matvec_kernel<<<num_blocks, block_size>>>(d_values, d_col_indices, d_x, d_y, A->rows, A->maxnz);
+    // Gestione degli errori del kernel
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(err));
+        exit(-1);
+    }
+
+    // Copia dei risultati dalla memoria device alla memoria host
+    cudaMemcpy(y, d_y, A->rows * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
+    // Libera la memoria allocata sulla GPU
+    cudaFree(d_values);
+    cudaFree(d_col_indices);
     cudaFree(d_x);
     cudaFree(d_y);
-
-    // Pulizia della memoria temporanea sulla CPU
-    free(h_block_row_ptrs);
-    free(h_block_col_indices);
-    free(h_block_values);
 }

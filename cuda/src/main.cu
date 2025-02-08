@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
     // printf("\nRow Ptr: ");
     // for (int i = 0; i <= A->rows; i++) printf("%d ", A->row_ptr[i]);
-
+ 
     double *y_serial = allocate_result(M);
     serial_csr_mult(A, x, y_serial);
 
@@ -64,16 +64,20 @@ int main(int argc, char *argv[]) {
     else if (strcmp(mode, "-cudaHLL") == 0) {
         double *y_cuda_hll = allocate_result(M);
 
-        int hack_size = 32;
-        HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
+        int hack_size = 32; // dobbiamo riproporzionare questo valore altrimenti andiamo fuori memoria tipo con 3000 amazon va, con 32 no =^(
+        ELLPackMatrix *A_ellpack_hack = convert_to_ELL(M, N, NZ, entries);
 
-        print_HLL(A_hll);
+        // HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
+        // print_HLL(A_hll);
+        //print_ELL(A_ellpack_hack);
+        //transpose_ELLPack(A_ellpack_hack);
+        print_ELL(A_ellpack_hack);
 
-        cuda_hll_mult(A_hll, x, y_cuda_hll);
+        matvec_ellpack_cuda(A_ellpack_hack, x, y_cuda_hll);
 
         compare_results(y_serial, y_cuda_hll, M);
 
-        free_HLL(A_hll);
+        free_ELL(A_ellpack_hack);
     }
 
     else {

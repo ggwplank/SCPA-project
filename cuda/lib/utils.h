@@ -30,7 +30,6 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries);
 
 void serial_csr_mult(CSRMatrix *A, double *x, double *y);
 
-
 void cuda_csr_mult(CSRMatrix *A, double *x, double *y);
 
 void free_CSR(CSRMatrix *A);
@@ -50,6 +49,10 @@ typedef struct {
 
 ELLPackMatrix* convert_to_ELL(int M, int N, int NZ, MatrixEntry *entries);
 
+void transpose_ELLPack(ELLPackMatrix *A);
+
+void matvec_ellpack_cuda(ELLPackMatrix *A, double *x, double *y);
+
 void free_ELL(ELLPackMatrix *A);
 
 void print_ELL(ELLPackMatrix *A);
@@ -66,7 +69,7 @@ typedef struct {
 
 HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_size);
 
-void cuda_hll_mult(HLLMatrix *H, double *x, double *y);
+void cuda_hll_mult(ELLPackMatrix *H, double *x, double *y);
 
 void free_HLL(HLLMatrix *H);
 

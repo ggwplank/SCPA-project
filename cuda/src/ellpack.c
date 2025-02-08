@@ -82,3 +82,79 @@ void print_ELL(ELLPackMatrix *A) {
         printf("\n");
     }
 }
+
+void transpose_ELLPack(ELLPackMatrix *A) {
+    // Passo 1: Calcolare il nuovo maxnz
+    int *column_nnz = (int*)calloc(A->cols, sizeof(int)); // Conta gli elementi per ogni colonna
+
+    for (int i = 0; i < A->rows; i++) {
+        for (int j = 0; j < A->maxnz; j++) {
+            int col = A->col_indices[i][j];
+            if (col != -1) {
+                column_nnz[col]++;
+            }
+        }
+    }
+
+    // Trovare il massimo numero di elementi in una colonna (che diventerà maxnz della trasposta)
+    int new_maxnz = 0;
+    for (int i = 0; i < A->cols; i++) {
+        if (column_nnz[i] > new_maxnz) {
+            new_maxnz = column_nnz[i];
+        }
+    }
+
+    free(column_nnz); // Non serve più
+
+    // Passo 2: Creazione della nuova matrice trasposta
+    ELLPackMatrix *transposed = (ELLPackMatrix*)malloc(sizeof(ELLPackMatrix));
+    transposed->rows = A->cols;
+    transposed->cols = A->rows;
+    transposed->nnz = A->nnz;
+    transposed->maxnz = new_maxnz; // Usare il nuovo maxnz calcolato
+
+    // Allocazione delle nuove matrici per i valori e gli indici
+    transposed->values = (double**)malloc(transposed->rows * sizeof(double*));
+    transposed->col_indices = (int**)malloc(transposed->rows * sizeof(int*));
+
+    for (int i = 0; i < transposed->rows; i++) {
+        transposed->values[i] = (double*)calloc(transposed->maxnz, sizeof(double));
+        transposed->col_indices[i] = (int*)calloc(transposed->maxnz, sizeof(int));
+
+        // Inizializziamo gli indici di colonna a -1 (come in convert_to_ELL)
+        for (int j = 0; j < transposed->maxnz; j++) {
+            transposed->col_indices[i][j] = -1;
+        }
+    }
+
+    // Passo 3: Trasposizione dei dati
+    int *row_counts = (int*)calloc(transposed->rows, sizeof(int));  // Contatore di elementi per ogni riga
+
+    for (int i = 0; i < A->rows; i++) {
+        for (int j = 0; j < A->maxnz; j++) {
+            if (A->col_indices[i][j] != -1) {
+                int col = A->col_indices[i][j];  // Nuova riga della matrice trasposta
+                int row = i;                     // Nuova colonna della matrice trasposta
+
+                int idx = row_counts[col]++;  // Posizione per l'elemento trasposto
+
+                // Controllo di sicurezza per evitare accessi fuori dai limiti
+                if (idx >= transposed->maxnz) {
+                    printf("Errore: idx (%d) supera maxnz (%d)\n", idx, transposed->maxnz);
+                    exit(EXIT_FAILURE);
+                }
+
+                transposed->values[col][idx] = A->values[i][j];
+                transposed->col_indices[col][idx] = row;
+            }
+        }
+    }
+
+    free(row_counts);
+
+    // Copia i dati della matrice trasposta nella struttura originale
+    *A = *transposed;
+
+    // Libera la memoria temporanea (senza liberare i valori e gli indici, ora dentro A)
+    free(transposed);
+}

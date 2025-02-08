@@ -17,16 +17,18 @@ HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_s
     hll->num_blocks = num_blocks;
     hll->hack_size = hack_size;
     hll->blocks = (ELLPackMatrix**)malloc(num_blocks * sizeof(ELLPackMatrix*));
-
+    
     // Converti ogni blocco in formato ELLPack
     for (int b = 0; b < num_blocks; b++) {
+        printf("Converting block %d of %d\n", b, num_blocks);
         int start_row = b * hack_size;
         int block_rows = (start_row + hack_size <= M) ? hack_size : (M - start_row);
 
-        // Creiamo una sotto-matrice con solo le righe del blocco
+        // Creiamo una lista di entries per il blocco, allocata solo con il numero effettivo di non-zero entries
         MatrixEntry *block_entries = (MatrixEntry*)malloc(NZ * sizeof(MatrixEntry));
         int block_nz = 0;
         
+        // Aggiungi entries al blocco
         for (int i = 0; i < NZ; i++) {
             if (entries[i].row >= start_row && entries[i].row < start_row + block_rows) {
                 block_entries[block_nz++] = (MatrixEntry){
@@ -37,11 +39,19 @@ HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_s
             }
         }
 
-        hll->blocks[b] = convert_to_ELL(block_rows, N, block_nz, block_entries);
-        free(block_entries);
+        // Se ci sono elementi nel blocco, convertili in formato ELL
+        if (block_nz > 0) {
+            hll->blocks[b] = convert_to_ELL(block_rows, N, block_nz, block_entries);
+            transpose_ELLPack(hll->blocks[b]);  // Trasposta del blocco
+        } else {
+            hll->blocks[b] = NULL;  // Se il blocco è vuoto, settiamo il puntatore a NULL
+        }
+
+        free(block_entries);  // Libera la memoria per block_entries
     }
     return hll;
 }
+
 
 void free_HLL(HLLMatrix *H) {
     for (int b = 0; b < H->num_blocks; b++) {
