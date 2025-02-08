@@ -3,6 +3,13 @@
 
 #include "mmio.h"
 
+// ------ Constants -------
+
+#define PERFORMANCE_FILE "performance.csv"
+#define REPETITIONS 1024
+#define EPSILON 1e-6
+
+
 // ------- Matrix generation -------
 
 typedef struct {
@@ -74,11 +81,29 @@ void print_HLL(HLLMatrix *H);
 
 
 
-// ------ Matrix operations ------
+// ------ Results utils ------
 
 void compare_results(double *y_serial, double *y_parallel, int size, int *passed, double *diff, double *rel_diff);
+
 double * allocate_result(int M);
 
+void save_results_to_csv(const char *filename, const char *matrix_name,
+    int M, int N, int NZ, 
+    const char *mode, int threads,
+    double time_ms,double median_time_ms,
+    double flops, double mflops, double gflops,
+    double flops_median, double mflops_median, double gflops_median,
+    int passed, double diff, double rel_diff, int iterations);
+
+void get_performances_and_save(
+    void (*matrix_mult)(void *, double *, double *), 
+    void *matrix, double *x, double *y_result, 
+    const char *matrix_name, int M, int N, int NZ, 
+    const char *mode, int num_threads,
+    double *y_serial
+);
+
+int compare_doubles(const void *a, const void *b);
 
 
 // ------ Vector generation ------

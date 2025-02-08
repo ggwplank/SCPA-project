@@ -4,8 +4,6 @@
 
 #include "utils.h"
 
-#define EPSILON 1e-6
-
 double * allocate_result(int M) {
     double *y = (double *)malloc(M * sizeof(double));
     if (!y) {
