@@ -9,8 +9,7 @@ void save_results_to_csv(const char *filename, const char *matrix_name,
     int M, int N, int NZ, 
     const char *mode, int threads,
     double time_ms,double median_time_ms,
-    double flops, double mflops, double gflops,
-    double flops_median, double mflops_median, double gflops_median,
+    double gflops, double gflops_median,
     int passed, double diff, double rel_diff, int iterations) {
 
     FILE *file = fopen(filename, "a");
@@ -22,7 +21,7 @@ void save_results_to_csv(const char *filename, const char *matrix_name,
     fseek(file, 0, SEEK_END);
     if (ftell(file) == 0)
         fprintf(file,
-            "Matrix,M,N,nz,CalculationMode,Threads,CalculationTime(ms),MedianTime(ms),Flops,MFlops,GFlops,Flops_Median,MFlops_Median,GFlops_Median,Passed,Diff,RelDiff,Iterations\n");
+            "Matrix,M,N,NZ,Mode,Threads,AvgTime(ms),MedianTime(ms),AvgGFlops,MedianGFlops,Passed,Diff,RelDiff,Iterations\n");
     
 
     mode = mode + 1; // skip the '-' character
@@ -30,8 +29,8 @@ void save_results_to_csv(const char *filename, const char *matrix_name,
     char *dot = strrchr(matrix_name, '.'); // remove the extension
     if (dot) *dot = '\0';
 
-    fprintf(file, "%s,%d,%d,%d,%s,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%d,%.6f,%.6f,%d\n",
-            matrix_name, M, N, NZ, mode, threads, time_ms, median_time_ms, flops, mflops, gflops, flops_median, mflops_median, gflops_median, passed, diff, rel_diff, iterations);
+    fprintf(file, "%s,%d,%d,%d,%s,%d,%.6f,%.6f,%.6f,%.6f,%d,%.6f,%.6f,%d\n",
+            matrix_name, M, N, NZ, mode, threads, time_ms, median_time_ms, gflops, gflops_median, passed, diff, rel_diff, iterations);
 
     fclose(file);
 }
@@ -72,11 +71,10 @@ void get_performances_and_save(
     double median_time_ms = median_time * 1000;
 
     double flops = (2.0 * NZ) / total_time;
-    double mflops = flops / 1e6;
     double gflops = flops / 1e9;
 
     double flops_median = (2.0 * NZ) / median_time;
-    double mflops_median = flops_median / 1e6;
+
     double gflops_median = flops_median / 1e9;
 
 
@@ -89,7 +87,6 @@ void get_performances_and_save(
 
     save_results_to_csv(PERFORMANCE_FILE, matrix_name, M, N, NZ, mode, num_threads, 
                         time_ms, median_time_ms,
-                        flops, mflops, gflops,
-                        flops_median, mflops_median, gflops_median,
+                        gflops, gflops_median,
                         passed, diff, rel_diff, REPETITIONS);
 }

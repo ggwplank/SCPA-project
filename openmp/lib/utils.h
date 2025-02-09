@@ -6,7 +6,7 @@
 // ------ Constants -------
 
 #define PERFORMANCE_FILE "performance.csv"
-#define REPETITIONS 1024
+#define REPETITIONS 50
 #define REL_TOL 1e-6
 #define ABS_TOL 1e-9
 
@@ -96,8 +96,7 @@ void save_results_to_csv(const char *filename, const char *matrix_name,
     int M, int N, int NZ, 
     const char *mode, int threads,
     double time_ms,double median_time_ms,
-    double flops, double mflops, double gflops,
-    double flops_median, double mflops_median, double gflops_median,
+    double gflops, double gflops_median,
     int passed, double diff, double rel_diff, int iterations);
 
 void get_performances_and_save(
