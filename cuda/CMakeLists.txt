@@ -46,6 +46,7 @@ set(CUDA_SOURCES
     src/csr_cuda.cu
     src/main.cu
     src/ellpack_cuda.cu
+    src/hll_cuda.cu
 )
 
 # Creazione dell'eseguibile

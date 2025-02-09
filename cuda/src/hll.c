@@ -12,6 +12,7 @@ Converte ogni blocco in formato ELLPack usando convert_to_ELL().
 Salva tutti i blocchi in un array blocks.
 */
 HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_size) {
+    printf("Converting to HLL...\n");
     int num_blocks = (M + hack_size - 1) / hack_size;  // Arrotonda in eccesso
     HLLMatrix *hll = (HLLMatrix*)malloc(sizeof(HLLMatrix));
     hll->num_blocks = num_blocks;
@@ -74,23 +75,23 @@ void print_HLL(HLLMatrix *H) {
 
 // idea: si potrebbe creare un kernel cuda che faccia questo lavoro da solo, con un for si calcola un blocco alla volta e questo ci rallenta molto
 // possiamo creare tutti quanti i pezzi qui e poi passarli al kernel per fare il ciclo direttamente da li dentro
-void matvec_hll_cuda(HLLMatrix *H, double *x, double *y) {
-    for (int b = 0; b < H->num_blocks; b++) {
-        ELLPackMatrix *block = H->blocks[b];
-        if (block == NULL) continue;  // Se il blocco è vuoto, salta questo blocco
-        int block_rows = block->rows;
-        int start_row = b * H->hack_size;
-        double *block_y = (double*)malloc(block_rows * sizeof(double));
+// void matvec_hll_cuda(HLLMatrix *H, double *x, double *y) {
+//     for (int b = 0; b < H->num_blocks; b++) {
+//         ELLPackMatrix *block = H->blocks[b];
+//         if (block == NULL) continue;  // Se il blocco è vuoto, salta questo blocco
+//         int block_rows = block->rows;
+//         int start_row = b * H->hack_size;
+//         double *block_y = (double*)malloc(block_rows * sizeof(double));
 
-        // Computa il prodotto matrice-vettore per il blocco
-        matvec_ellpack_cuda(block, x, block_y);
+//         // Computa il prodotto matrice-vettore per il blocco
+//         matvec_ellpack_cuda(block, x, block_y);
 
-        // Aggiungi i risultati del blocco nel vettore y
-        for (int i = 0; i < block_rows; i++) {
-            y[start_row + i] += block_y[i];
-        }
+//         // Aggiungi i risultati del blocco nel vettore y
+//         for (int i = 0; i < block_rows; i++) {
+//             y[start_row + i] += block_y[i];
+//         }
 
-        free(block_y);
-    }
-}
+//         free(block_y);
+//     }
+// }
 

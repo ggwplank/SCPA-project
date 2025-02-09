@@ -21,12 +21,12 @@ int main(int argc, char *argv[]) {
     int M, N, NZ;
     MatrixEntry *entries;
 
+    printf("Carico la matrice %s...\n", matrix_name);
     read_matrix_market(matrix_filename, &M, &N, &NZ, &entries);
     printf("Matrice %dx%d, nonzeri: %d\n", M, N, NZ);
 
+    printf("Conversione della matrice in formato CSR...\n");
     CSRMatrix *A = convert_to_CSR(M, N, NZ, entries);
-
-    ELLPackMatrix *A_ellpack = convert_to_ELL(M, N, NZ, entries);
     
     double *x = NULL;
     generate_random_vector(matrix_name, M, &x);
@@ -81,7 +81,6 @@ int main(int argc, char *argv[]) {
     }
 
     free_CSR(A);
-    free_ELL(A_ellpack);
     free(entries);
     free(x);
     
