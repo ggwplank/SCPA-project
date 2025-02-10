@@ -88,14 +88,17 @@ void serial_csr_mult(CSRMatrix *A, double *x, double *y) {
     }
 }
 
-// prodotto matrice-vettore con OpenMP
 void omp_csr_mult(CSRMatrix *A, double *x, double *y) {
     #pragma omp parallel for schedule(dynamic, 3)
     for (int i = 0; i < A->rows; i++) {
-        y[i] = 0.0;
-        for (int j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++) {
-            y[i] += A->values[j] * x[A->col_indices[j]];
+        double sum = 0.0;
+        int row_start = A->row_ptr[i];
+        int row_end = A->row_ptr[i + 1];
+        for (int j = row_start; j < row_end; j++) {
+            sum += A->values[j] * x[A->col_indices[j]];
         }
+
+        y[i] = sum;
     }
 }
 

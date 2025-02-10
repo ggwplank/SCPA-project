@@ -74,9 +74,7 @@ void get_performances_and_save(
     double gflops = flops / 1e9;
 
     double flops_median = (2.0 * NZ) / median_time;
-
     double gflops_median = flops_median / 1e9;
-
 
     int passed = 1;
     double diff = 0.0, rel_diff = 0.0;

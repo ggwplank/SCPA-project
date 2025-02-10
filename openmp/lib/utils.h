@@ -6,9 +6,10 @@
 // ------ Constants -------
 
 #define PERFORMANCE_FILE "performance.csv"
-#define REPETITIONS 50
+#define REPETITIONS 3
 #define REL_TOL 1e-6
 #define ABS_TOL 1e-9
+#define HACK_SIZE 128
 
 
 
