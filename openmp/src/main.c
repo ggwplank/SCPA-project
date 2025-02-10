@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     int M, N, NZ;
     MatrixEntry *entries;
 
-    printf("Lettura della matrice...\n");
+    printf("\nLettura della matrice...\n");
     read_matrix_market(matrix_filename, &M, &N, &NZ, &entries);
     printf("Matrice %dx%d, nonzeri: %d\n", M, N, NZ);
 
