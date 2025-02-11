@@ -16,7 +16,8 @@ __global__ void csr_mult_cuda_kernel(int rows, int *d_row_ptr, int *d_col_indice
     }
 }
 
-void cuda_csr_mult(CSRMatrix *A, double *x, double *y) {
+void cuda_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time) {
+    printf("Eseguo il prodotto matrice-vettore con CUDA...\n");
     int *d_row_ptr, *d_col_indices;
     double *d_values, *d_x, *d_y;
 
@@ -36,10 +37,25 @@ void cuda_csr_mult(CSRMatrix *A, double *x, double *y) {
     // 3. Configurazione e lancio del kernel CUDA
     int blockSize = 256;  // Numero di thread per blocco
     int gridSize = (A->rows + blockSize - 1) / blockSize;  // Numero di blocchi
+
+    // Configurazione per il calcolo del tempo di esecuzione
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    
+    cudaEventRecord(start, 0);
+
     csr_mult_cuda_kernel<<<gridSize, blockSize>>>(A->rows, d_row_ptr, d_col_indices, d_values, d_x, d_y);
+
+    // registrazione del tempo di esecuzione
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
 
     // 4. Copia il risultato dalla GPU alla CPU
     cudaMemcpy(y, d_y, A->rows * sizeof(double), cudaMemcpyDeviceToHost);
+
+    // allocazioen del tempo
+    cudaEventElapsedTime(elapsed_time, start, stop);
 
     // 5. Deallocazione della memoria sulla GPU
     cudaFree(d_row_ptr);

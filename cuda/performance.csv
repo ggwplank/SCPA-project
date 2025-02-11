@@ -1,2 +1,4 @@
 Matrix,M,N,NZ,Mode,AvgTime(ms),MedianTime(ms),AvgGFlops,MedianGFlops,Passed,Diff,RelDiff,Iterations
 
+cage4.mtx,9,9,49,cudaCSR,31.510943,0.021504,0.000000,0.000005,1,0.000000,0.000000,5
+cage4.mtx,9,9,49,cudaHLL,30.878733,0.009216,0.000000,0.000011,1,0.000000,0.000000,5

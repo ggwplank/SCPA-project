@@ -110,12 +110,11 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
 
+    // Copia del risultato dalla GPU alla CPU
     cudaMemcpy(y, d_y, num_blocks * hack_size * sizeof(double), cudaMemcpyDeviceToHost);
 
+    // allocazioen del tempo
     cudaEventElapsedTime(elapsed_time, start, stop);
-
-    // Copia del risultato dalla GPU alla CPU
-
 
 
     // Pulizia della memoria

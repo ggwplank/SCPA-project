@@ -56,16 +56,15 @@ int main(int argc, char *argv[]) {
         double *y_cuda_csr = allocate_result(M);
 
         printf("Eseguo il prodotto matrice-vettore con CUDA...\n");
-        cuda_csr_mult(A, x, y_cuda_csr);
 
-        //compare_results(y_serial, y_cuda_csr, M);
+        get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))cuda_csr_mult, A, x, y_cuda_csr,
+        matrix_name, M, N, NZ,
+        mode, y_serial);
+        
     }
 
     else if (strcmp(mode, "-cudaHLL") == 0) {
         int hack_size = 3000; // dobbiamo riproporzionare questo valore altrimenti andiamo fuori memoria tipo con 3000 amazon va, con 32 no =^(
-        //ELLPackMatrix *A_ellpack_hack = convert_to_ELL(M, N, NZ, entries);
-        //transpose_ELLPack(A_ellpack_hack); // la trsposta forse non serve, infatti, quando eseguiamo il kernel cuda quello che facciamo è passargli direttamente le colonne garantendo coalescenza
-        //matvec_ellpack_cuda(A_ellpack_hack, x, y_cuda_hll);
         
         HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
 

@@ -39,7 +39,7 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries);
 
 void serial_csr_mult(CSRMatrix *A, double *x, double *y);
 
-void cuda_csr_mult(CSRMatrix *A, double *x, double *y);
+void cuda_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time);
 
 void free_CSR(CSRMatrix *A);
 
