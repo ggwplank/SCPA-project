@@ -65,10 +65,7 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
         A->col_indices[index] = entries[i].col;
         A->values[index] = entries[i].value;
         A->row_ptr[row]++;
-
-        /* PROBLEMA? row_ptr[row] viene modificato durante l'inserimento.
-        copia temporanea di row_ptr prima di riempire gli array? */
-    }
+   }
 
     // ripristina i valori di row_ptr
     for (int i = M; i > 0; i--)

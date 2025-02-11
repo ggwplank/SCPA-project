@@ -65,9 +65,6 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
         A->col_indices[index] = entries[i].col;
         A->values[index] = entries[i].value;
         A->row_ptr[row]++;
-
-        /* PROBLEMA? row_ptr[row] viene modificato durante l'inserimento.
-        copia temporanea di row_ptr prima di riempire gli array? */
     }
 
     // ripristina i valori di row_ptr
@@ -80,12 +77,12 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
 }
 
 void serial_csr_mult(CSRMatrix *A, double *x, double *y) {
-    printf("Serial CSR multiplication\n");
     for (int i = 0; i < A->rows; i++) {
         y[i] = 0.0;
-        for (int j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++) {
+
+        for (int j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++)
             y[i] += A->values[j] * x[A->col_indices[j]];
-        }
+        
     }
 }
 

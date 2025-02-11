@@ -12,65 +12,56 @@ Converte ogni blocco in formato ELLPack usando convert_to_ELL().
 Salva tutti i blocchi in un array blocks.
 */
 HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_size) {
-    printf("Converting to HLL...\n");
-    int num_blocks = (M + hack_size - 1) / hack_size;  // Arrotonda in eccesso
+    int num_blocks = (M + hack_size - 1) / hack_size;
+
     HLLMatrix *hll = (HLLMatrix*)malloc(sizeof(HLLMatrix));
     hll->num_blocks = num_blocks;
     hll->hack_size = hack_size;
     hll->blocks = (ELLPackMatrix**)malloc(num_blocks * sizeof(ELLPackMatrix*));
     
-    // Converti ogni blocco in formato ELLPack
+    // Ogni blocco viene convertito in ELLPack
     for (int b = 0; b < num_blocks; b++) {
         int start_row = b * hack_size;
         int block_rows = (start_row + hack_size <= M) ? hack_size : (M - start_row);
 
-        // Creiamo una lista di entries per il blocco, allocata solo con il numero effettivo di non-zero entries
+        // sotto-matrice con solo le righe del blocco
         MatrixEntry *block_entries = (MatrixEntry*)malloc(NZ * sizeof(MatrixEntry));
         int block_nz = 0;
         
-        // Aggiungi entries al blocco
+
         for (int i = 0; i < NZ; i++) {
             if (entries[i].row >= start_row && entries[i].row < start_row + block_rows) {
                 block_entries[block_nz++] = (MatrixEntry){
-                    .row = entries[i].row - start_row, // Shift per il nuovo blocco
+                    .row = entries[i].row - start_row,
                     .col = entries[i].col,
                     .value = entries[i].value
                 };
             }
         }
 
-        // Se ci sono elementi nel blocco, convertili in formato ELL
-        if (block_nz > 0) {
+        if (block_nz > 0)
             hll->blocks[b] = convert_to_ELL(block_rows, N, block_nz, block_entries);
-            // transpose_ELLPack(hll->blocks[b]);  // Trasposta del blocco, vedi main
-        } else {
-            hll->blocks[b] = NULL;  // Se il blocco è vuoto, settiamo il puntatore a NULL
-        }
+        else
+            hll->blocks[b] = NULL; 
 
-        free(block_entries);  // Libera la memoria per block_entries
+        free(block_entries);
     }
     return hll;
 }
 
-
 void free_HLL(HLLMatrix *H) {
-    for (int b = 0; b < H->num_blocks; b++) {
+    for (int b = 0; b < H->num_blocks; b++)
         free_ELL(H->blocks[b]);
-    }
+
     free(H->blocks);
+    free(H);
 }
 
 void print_HLL(HLLMatrix *H) {
-    printf("HLL Matrix: %d blocchi, hack_size = %d\n", H->num_blocks, H->hack_size);
-
-    // voglio stampare quante sono le righe nell'ultimo blocco
     int last_block_rows = H->blocks[H->num_blocks - 1]->rows;
-    printf("Ultimo blocco: %d righe\n", last_block_rows);
 
-    for (int b = 0; b < H->num_blocks; b++) {
-         printf("\nBlocco %d:\n", b);
-         print_ELL(H->blocks[b]);
-    }
+    printf("HLL Matrix: %d blocchi, hack_size = %d\n", H->num_blocks, H->hack_size);
+    printf("Ultimo blocco: %d righe\n", last_block_rows);
 }
 
 // idea: si potrebbe creare un kernel cuda che faccia questo lavoro da solo, con un for si calcola un blocco alla volta e questo ci rallenta molto

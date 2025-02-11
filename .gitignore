@@ -8,3 +8,5 @@ openmp/performance.csv
 openmp/speedup.csv
 
 cuda/build/
+cuda/performance.csv
+cuda/speedup.csv

@@ -14,18 +14,18 @@ double * allocate_result(int M) {
     return y;
 }
 
-void compare_results(double *y_serial, double *y_parallel, int size, int *passed, double *diff, double *rel_diff) {
+void compare_results(double *y_serial, double *y_parallel, int size, int *passed) {
+    double diff = 0.0;
+    double rel_diff = 0.0;
     *passed = 1;
-    *diff = 0.0;
-    *rel_diff = 0.0;
 
     for (int i = 0; i < size; i++) {
         double abs_diff = fabs(y_serial[i] - y_parallel[i]);
         double max_val = fmax(fabs(y_serial[i]), fabs(y_parallel[i]));
         double rel_diff_val = (max_val == 0) ? 0.0 : abs_diff / max_val;
 
-        *diff = fmax(*diff, abs_diff);
-        *rel_diff = fmax(*rel_diff, rel_diff_val);
+        diff = fmax(diff, abs_diff);
+        rel_diff = fmax(rel_diff, rel_diff_val);
 
         // utilizziamo l'and perché così evitiamo falsi positivi
         // se i numeri sono molto piccoli l'errore relativo potrebbe essere molto grande anche per differenze minime
@@ -44,5 +44,5 @@ void compare_results(double *y_serial, double *y_parallel, int size, int *passed
     if (*passed)
         printf("I risultati seriale e parallelo sono uguali\n");
     else
-        printf("I risultati seriale e parallelo sono diversi (max rel diff: %lf)\n", *rel_diff);
+        printf("I risultati seriale e parallelo sono diversi (max rel diff: %lf)\n", rel_diff);
 }

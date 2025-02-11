@@ -9,6 +9,7 @@
 #define REPETITIONS 5
 #define REL_TOL 1e-6
 #define ABS_TOL 1e-9
+#define HACK_SIZE 2048
 
 
 
@@ -58,13 +59,7 @@ typedef struct {
 
 ELLPackMatrix* convert_to_ELL(int M, int N, int NZ, MatrixEntry *entries);
 
-void transpose_ELLPack(ELLPackMatrix *A);
-
-void matvec_ellpack_cuda(ELLPackMatrix *A, double *x, double *y);
-
 void free_ELL(ELLPackMatrix *A);
-
-void print_ELL(ELLPackMatrix *A);
 
 
 
@@ -88,16 +83,15 @@ void print_HLL(HLLMatrix *H);
 
 // ------ Matrix operations ------
 
-void compare_results(double *y_serial, double *y_parallel, int size, int *passed, double *diff, double *rel_diff);
+void compare_results(double *y_serial, double *y_parallel, int size, int *passed);
 
 double * allocate_result(int M);
 
 void save_results_to_csv(const char *filename, const char *matrix_name,
     int M, int N, int NZ, 
-    const char *mode, int BOH,
-    double time_ms,double median_time_ms,
-    double flops, double mflops, double gflops,
-    double flops_median, double mflops_median, double gflops_median,
+    const char *mode,
+    double time_ms,double median_time_ms, double best_time_ms,
+    double gflops, double gflops_median, double best_gflops,
     int passed, int iterations);
 
 void get_performances_and_save_cuda(
