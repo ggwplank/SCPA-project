@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
         printf("\n");
 
         free(y_serial);
+        free(entries);
     }
 
     else if (strcmp(mode, "-cudaCSR") == 0) {
@@ -60,6 +61,8 @@ int main(int argc, char *argv[]) {
         get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))cuda_csr_mult, A, x, y_cuda_csr,
         matrix_name, M, N, NZ,
         mode, y_serial);
+
+        free(entries);
         
     }
 
@@ -74,7 +77,7 @@ int main(int argc, char *argv[]) {
         matrix_name, M, N, NZ,
         mode, y_serial);
 
-
+        free(y_cuda_hll);
         free_HLL(A_hll);
     }
 
@@ -82,8 +85,9 @@ int main(int argc, char *argv[]) {
         printf("Le possibili modalità sono: -serial, -cudaCSR, -cudaHLL\n");
     }
 
+
+    free(y_serial);
     free_CSR(A);
-    free(entries);
     free(x);
     
     return 0;

@@ -37,6 +37,14 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     int num_blocks = H->num_blocks;
     int hack_size = H->hack_size;
 
+    // Calcola il numero totale di righe nella matrice HLL
+    int total_rows = 0;
+    for (int b = 0; b < num_blocks; b++) {
+        if (H->blocks[b] != NULL) {
+            total_rows += H->blocks[b]->rows;
+        }
+    }
+
     // Allocazione per la struttura lineare di tutti i blocchi
     int total_values = 0;
     for (int b = 0; b < num_blocks; b++) {
@@ -111,10 +119,11 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     cudaEventSynchronize(stop);
 
     // Copia del risultato dalla GPU alla CPU
-    cudaMemcpy(y, d_y, num_blocks * hack_size * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(y, d_y, total_rows * sizeof(double), cudaMemcpyDeviceToHost);
 
     // allocazioen del tempo
     cudaEventElapsedTime(elapsed_time, start, stop);
+
 
 
     // Pulizia della memoria
