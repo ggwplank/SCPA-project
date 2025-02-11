@@ -32,7 +32,7 @@ __global__ void matvec_hll_kernel(double *values, int *col_indices, double *x, d
 
 }
 
-void matvec_hll_cuda(HLLMatrix *H, double *x, double *y) {
+void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     printf("Eseguo il prodotto matrice-vettore con CUDA...\n");
     int num_blocks = H->num_blocks;
     int hack_size = H->hack_size;
@@ -95,19 +95,37 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y) {
     int num_threads = num_blocks * hack_size;
     int grid_size = (num_threads + block_size - 1) / block_size;
 
-    // Lancio del kernel
-    matvec_hll_kernel<<<grid_size, block_size>>>(d_values, d_col_indices, d_x, d_y, 
-                                                 d_block_offsets, d_block_nnz, d_block_rows, hack_size, num_blocks);
-    cudaDeviceSynchronize();
+    // Configurazione per il calcolo del tempo di esecuzione
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
 
-    // Copia del risultato dalla GPU alla CPU
+    cudaEventRecord(start, 0);
+
+    // Lancio del kernel
+    matvec_hll_kernel<<<grid_size, block_size>>>(d_values, d_col_indices, d_x, d_y, d_block_offsets, d_block_nnz, d_block_rows, hack_size, num_blocks);
+
+
+    // registrazione del tempo di esecuzione
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+
     cudaMemcpy(y, d_y, num_blocks * hack_size * sizeof(double), cudaMemcpyDeviceToHost);
 
+    cudaEventElapsedTime(elapsed_time, start, stop);
+
+    // Copia del risultato dalla GPU alla CPU
+
+
+
     // Pulizia della memoria
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
     cudaFree(d_values);
     cudaFree(d_col_indices);
     cudaFree(d_x);
     cudaFree(d_y);
     cudaFree(d_block_offsets);
     cudaFree(d_block_nnz);
+    cudaFree(d_block_rows);
 }

@@ -67,10 +67,10 @@ void print_HLL(HLLMatrix *H) {
     int last_block_rows = H->blocks[H->num_blocks - 1]->rows;
     printf("Ultimo blocco: %d righe\n", last_block_rows);
 
-    // for (int b = 0; b < H->num_blocks; b++) {
-    //     printf("\nBlocco %d:\n", b);
-    //     print_ELL(H->blocks[b]);
-    // }
+    for (int b = 0; b < H->num_blocks; b++) {
+         printf("\nBlocco %d:\n", b);
+         print_ELL(H->blocks[b]);
+    }
 }
 
 // idea: si potrebbe creare un kernel cuda che faccia questo lavoro da solo, con un for si calcola un blocco alla volta e questo ci rallenta molto

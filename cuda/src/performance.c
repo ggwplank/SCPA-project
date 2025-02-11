@@ -9,8 +9,7 @@ void save_results_to_csv(const char *filename, const char *matrix_name,
     int M, int N, int NZ, 
     const char *mode,
     double time_ms,double median_time_ms,
-    double flops, double mflops, double gflops,
-    double flops_median, double mflops_median, double gflops_median,
+    double gflops, double gflops_median,
     int passed, double diff, double rel_diff, int iterations) {
 
     FILE *file = fopen(filename, "a");
@@ -22,16 +21,16 @@ void save_results_to_csv(const char *filename, const char *matrix_name,
     fseek(file, 0, SEEK_END);
     if (ftell(file) == 0)
         fprintf(file,
-            "Matrix,M,N,nz,CalculationMode,BlockSize,CalculationTime(ms),MedianTime(ms),Flops,MFlops,GFlops,Flops_Median,MFlops_Median,GFlops_Median,Passed,Diff,RelDiff,Iterations\n");
+            "Matrix,M,N,NZ,Mode,AvgTime(ms),MedianTime(ms),AvgGFlops,MedianGFlops,Passed,Diff,RelDiff,Iterations\n");
     
 
     mode = mode + 1; // skip the '-' character
 
-    char *dot = strrchr(matrix_name, '.'); // remove the extension
-    if (dot) *dot = '\0';
+    //char *dot = strrchr(matrix_name, '.'); // remove the extension
+    //if (dot) *dot = '\0';
 
-    fprintf(file, "%s,%d,%d,%d,%s,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%d,%.6f,%.6f,%d\n",
-            matrix_name, M, N, NZ, mode, time_ms, median_time_ms, flops, mflops, gflops, flops_median, mflops_median, gflops_median, passed, diff, rel_diff, iterations);
+    fprintf(file, "%s,%d,%d,%d,%s,%.6f,%.6f,%.6f,%.6f,%d,%.6f,%.6f,%d\n",
+            matrix_name, M, N, NZ, mode, time_ms, median_time_ms, gflops, gflops_median, passed, diff, rel_diff, iterations);
 
     fclose(file);
 }
@@ -42,8 +41,8 @@ int compare_doubles(const void *a, const void *b) {
     return (arg1 > arg2) - (arg1 < arg2);
 }
 
-void get_performances_and_save(
-    void (*matrix_mult)(void *, double *, double *), 
+void get_performances_and_save_cuda(
+    void (*matrix_mult)(void *, double *, double *, float *), 
     void *matrix, double *x, double *y_result, 
     const char *matrix_name, int M, int N, int NZ, 
     const char *mode,
@@ -51,25 +50,23 @@ void get_performances_and_save(
 ) {
     double start_time, end_time, total_time = 0.0;
     double times[REPETITIONS];
+    float *elapsed_time = (float *) malloc(sizeof(float));
+    
 
     for (int i = 0; i < REPETITIONS; i++) {
-        //start_time = omp_get_wtime();
-        matrix_mult(matrix, x, y_result);
-        //end_time = omp_get_wtime();
-
-        double elapsed_time = end_time - start_time;
-        total_time += elapsed_time;
-        times[i] = elapsed_time;
+        matrix_mult(matrix, x, y_result, elapsed_time);
+        total_time += *elapsed_time;
+        times[i] = *elapsed_time;
     }
 
     total_time /= REPETITIONS;
-    double time_ms = total_time * 1000;
+    double time_ms = total_time;
 
     qsort(times, REPETITIONS, sizeof(double), compare_doubles);
     double median_time = REPETITIONS % 2 == 0 
                          ? (times[REPETITIONS / 2 - 1] + times[REPETITIONS / 2]) / 2
                          : times[REPETITIONS / 2];
-    double median_time_ms = median_time * 1000;
+    double median_time_ms = median_time;
 
     double flops = (2.0 * NZ) / total_time;
     double mflops = flops / 1e6;
@@ -86,10 +83,8 @@ void get_performances_and_save(
     if (y_serial)
         compare_results(y_serial, y_result, M, &passed, &diff, &rel_diff);
 
-
-    save_results_to_csv(PERFORMANCE_FILE, matrix_name, M, N, NZ, mode, 
-                        time_ms, median_time_ms,
-                        flops, mflops, gflops,
-                        flops_median, mflops_median, gflops_median,
-                        passed, diff, rel_diff, REPETITIONS);
+    save_results_to_csv(PERFORMANCE_FILE, matrix_name, M, N, NZ, mode,
+            time_ms, median_time_ms,
+            gflops, gflops_median,
+            passed, diff, rel_diff, REPETITIONS);
 }

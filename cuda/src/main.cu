@@ -62,17 +62,20 @@ int main(int argc, char *argv[]) {
     }
 
     else if (strcmp(mode, "-cudaHLL") == 0) {
-        double *y_cuda_hll = allocate_result(M);
-
         int hack_size = 3000; // dobbiamo riproporzionare questo valore altrimenti andiamo fuori memoria tipo con 3000 amazon va, con 32 no =^(
         //ELLPackMatrix *A_ellpack_hack = convert_to_ELL(M, N, NZ, entries);
         //transpose_ELLPack(A_ellpack_hack); // la trsposta forse non serve, infatti, quando eseguiamo il kernel cuda quello che facciamo è passargli direttamente le colonne garantendo coalescenza
         //matvec_ellpack_cuda(A_ellpack_hack, x, y_cuda_hll);
         
         HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
-        matvec_hll_cuda(A_hll, x, y_cuda_hll);
 
-        compare_results(y_serial, y_cuda_hll, M);
+        double *y_cuda_hll = allocate_result(M);
+        
+        get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))matvec_hll_cuda, A_hll, x, y_cuda_hll,
+        matrix_name, M, N, NZ,
+        mode, y_serial);
+
+
         free_HLL(A_hll);
     }
 
@@ -86,3 +89,5 @@ int main(int argc, char *argv[]) {
     
     return 0;
 }
+
+

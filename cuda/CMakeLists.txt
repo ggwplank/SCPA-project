@@ -38,6 +38,7 @@ set(SOURCES
     src/mtx_reader.c
     src/vector_generator.c
     lib/mmio.c
+    src/performance.c
 )
 
 # Definizione dei file CUDA

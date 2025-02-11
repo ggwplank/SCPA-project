@@ -6,7 +6,7 @@
 // ------ Constants -------
 
 #define PERFORMANCE_FILE "performance.csv"
-#define REPETITIONS 1024
+#define REPETITIONS 5
 #define REL_TOL 1e-6
 #define ABS_TOL 1e-9
 
@@ -78,7 +78,7 @@ typedef struct {
 
 HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_size);
 
-void matvec_hll_cuda(HLLMatrix *H, double *x, double *y);
+void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time);
 
 void free_HLL(HLLMatrix *H);
 
@@ -88,7 +88,7 @@ void print_HLL(HLLMatrix *H);
 
 // ------ Matrix operations ------
 
-void compare_results(double *y_serial, double *y_parallel, int size);
+void compare_results(double *y_serial, double *y_parallel, int size, int *passed, double *diff, double *rel_diff);
 
 double * allocate_result(int M);
 
@@ -100,11 +100,11 @@ void save_results_to_csv(const char *filename, const char *matrix_name,
     double flops_median, double mflops_median, double gflops_median,
     int passed, double diff, double rel_diff, int iterations);
 
-void get_performances_and_save(
-    void (*matrix_mult)(void *, double *, double *), 
+void get_performances_and_save_cuda(
+    void (*matrix_mult)(void *, double *, double *, float *), 
     void *matrix, double *x, double *y_result, 
     const char *matrix_name, int M, int N, int NZ, 
-    const char *mode, int BOH,
+    const char *mode,
     double *y_serial
 );
 
