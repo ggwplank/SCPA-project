@@ -35,10 +35,10 @@ matrices=(
 )
 modes=("-serial" "-ompCSR" "-ompHLL")
 
-THREADS = 16
+THREADS=16
 
 echo ">>> Opening cuda..."
-cd cuda || exit 1  # Se fallisce, esce con errore
+cd openmp || exit 1  # Se fallisce, esce con errore
 
 echo ">>> Cleaning..."
 make clean
