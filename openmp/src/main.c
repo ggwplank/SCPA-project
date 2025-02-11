@@ -12,9 +12,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const char *matrix_filename = argv[1];  // --> dir/file.mtx
-    const char *matrix_name = strrchr(matrix_filename, '/'); // --> /file.mtx
-    matrix_name = (matrix_name) ? matrix_name + 1 : matrix_filename; // --> file.mtx
+    const char *matrix_filename = argv[1];
+    const char *matrix_name = strrchr(matrix_filename, '/');
+    matrix_name = (matrix_name) ? matrix_name + 1 : matrix_filename;
 
     const char *mode = argv[2];
 
@@ -29,8 +29,6 @@ int main(int argc, char *argv[]) {
 
     printf("Conversione in formato CSR...\n");
     CSRMatrix *A = convert_to_CSR(M, N, NZ, entries);
-
-    //ELLPackMatrix *A_ellpack = convert_to_ELL(M, N, NZ, entries);
     
     double *x = NULL;
     printf("Generazione del vettore randomico...\n");
@@ -46,6 +44,8 @@ int main(int argc, char *argv[]) {
             A, x, y_serial,
             matrix_name, M, N, NZ,
             mode, 1, NULL);
+
+        printf("Calcolo terminato.\n");
     }
 
     else if (strcmp(mode, "-ompCSR") == 0) {
@@ -86,7 +86,6 @@ int main(int argc, char *argv[]) {
     }
     
     free_CSR(A);
-    //free_ELL(A_ellpack);
     free(y_serial);
     free(entries);
     free(x);

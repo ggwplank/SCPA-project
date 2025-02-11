@@ -3,22 +3,19 @@
 INPUT_FILE="openmp/performance.csv"
 OUTPUT_FILE="openmp/speedup.csv"
 
-# Scrive l'header del file di output
 echo "Matrix,Mode,Threads,Speedup_Avg,Speedup_Median" > "$OUTPUT_FILE"
 
 declare -A serial_times_avg
 declare -A serial_times_median
 
 # Legge tutte le righe del file tranne l'header
-awk -F',' 'NR>1 { print }' "$INPUT_FILE" | while IFS=',' read -r matrix m n nz mode threads avg_time median_time avg_gflops median_gflops passed diff reldiff iterations; do
+awk -F',' 'NR>1 { print }' "$INPUT_FILE" | while IFS=',' read -r matrix m n nz mode threads avg_time median_time best_time avg_gflops median_gflops best_gflops passed diff reldiff iterations; do
     
-    # Salva il tempo di esecuzione seriale per ciascuna matrice
     if [[ "$mode" == "serial" ]]; then
         serial_times_avg[$matrix]=$avg_time
         serial_times_median[$matrix]=$median_time
     fi
     
-    # Calcola lo speedup per altre modalità
     if [[ "$mode" == "ompCSR" || "$mode" == "ompHLL" ]]; then
         if [[ -n "${serial_times_avg[$matrix]}" && "${serial_times_avg[$matrix]}" != "0" && -n "${serial_times_median[$matrix]}" && "${serial_times_median[$matrix]}" != "0" ]]; then
             speedup_avg=$(echo "scale=6; ${serial_times_avg[$matrix]} / $avg_time" | bc)

@@ -6,10 +6,10 @@
 // ------ Constants -------
 
 #define PERFORMANCE_FILE "performance.csv"
-#define REPETITIONS 3
+#define REPETITIONS 5
 #define REL_TOL 1e-6
 #define ABS_TOL 1e-9
-#define HACK_SIZE 128
+#define HACK_SIZE 2048
 
 
 
@@ -59,11 +59,7 @@ typedef struct {
 
 ELLPackMatrix* convert_to_ELL(int M, int N, int NZ, MatrixEntry *entries);
 
-void omp_ellpack_mult(ELLPackMatrix *A, double *x, double *y);
-
 void free_ELL(ELLPackMatrix *A);
-
-void print_ELL(ELLPackMatrix *A);
 
 
 
@@ -87,16 +83,16 @@ void print_HLL(HLLMatrix *H);
 
 // ------ Results utils ------
 
-void compare_results(double *y_serial, double *y_parallel, int size, int *passed, double *diff, double *rel_diff);
+void compare_results(double *y_serial, double *y_parallel, int size, int *passed);
 
 double * allocate_result(int M);
 
 void save_results_to_csv(const char *filename, const char *matrix_name,
     int M, int N, int NZ, 
     const char *mode, int threads,
-    double time_ms,double median_time_ms,
-    double gflops, double gflops_median,
-    int passed, double diff, double rel_diff, int iterations);
+    double time_ms,double median_time_ms, double best_time_ms,
+    double gflops, double gflops_median, double best_gflops,
+    int passed, int iterations);
 
 void get_performances_and_save(
     void (*matrix_mult)(void *, double *, double *), 

@@ -12,25 +12,26 @@ Converte ogni blocco in formato ELLPack usando convert_to_ELL().
 Salva tutti i blocchi in un array blocks.
 */
 HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_size) {
-    int num_blocks = (M + hack_size - 1) / hack_size;  // Arrotonda in eccesso
+    int num_blocks = (M + hack_size - 1) / hack_size; 
+
     HLLMatrix *hll = (HLLMatrix*)malloc(sizeof(HLLMatrix));
     hll->num_blocks = num_blocks;
     hll->hack_size = hack_size;
     hll->blocks = (ELLPackMatrix**)malloc(num_blocks * sizeof(ELLPackMatrix*));
 
-    // Converti ogni blocco in formato ELLPack
+    // Ogni blocco viene convertito in ELLPack
     for (int b = 0; b < num_blocks; b++) {
         int start_row = b * hack_size;
         int block_rows = (start_row + hack_size <= M) ? hack_size : (M - start_row);
 
-        // Creiamo una sotto-matrice con solo le righe del blocco
+        // sotto-matrice con solo le righe del blocco
         MatrixEntry *block_entries = (MatrixEntry*)malloc(NZ * sizeof(MatrixEntry));
         int block_nz = 0;
         
         for (int i = 0; i < NZ; i++) {
             if (entries[i].row >= start_row && entries[i].row < start_row + block_rows) {
                 block_entries[block_nz++] = (MatrixEntry){
-                    .row = entries[i].row - start_row, // Shift per il nuovo blocco
+                    .row = entries[i].row - start_row,
                     .col = entries[i].col,
                     .value = entries[i].value
                 };
@@ -51,10 +52,11 @@ void omp_hll_mult(HLLMatrix *H, double *x, double *y) {
 
         for (int i = 0; i < block->rows; i++) {
             double sum = 0.0;
+
             for (int j = 0; j < block->maxnz; j++) {
-                if (block->col_indices[i][j] != -1) {
+                if (block->col_indices[i][j] != -1)
                     sum += block->values[i][j] * x[block->col_indices[i][j]];
-                }
+                
             }
             y[start_row + i] = sum;
         }
@@ -63,22 +65,16 @@ void omp_hll_mult(HLLMatrix *H, double *x, double *y) {
 // NOTA: Iteriamo sui blocchi, non sulle righe come facevamo con ELLPack
 
 void free_HLL(HLLMatrix *H) {
-    for (int b = 0; b < H->num_blocks; b++) {
+    for (int b = 0; b < H->num_blocks; b++)
         free_ELL(H->blocks[b]);
-    }
+    
     free(H->blocks);
     free(H);
 }
 
 void print_HLL(HLLMatrix *H) {
-    printf("HLL Matrix: %d blocchi, hack_size = %d\n", H->num_blocks, H->hack_size);
-
-    // voglio stampare quante sono le righe nell'ultimo blocco
     int last_block_rows = H->blocks[H->num_blocks - 1]->rows;
-    printf("Ultimo blocco: %d righe\n", last_block_rows);
 
-    // for (int b = 0; b < H->num_blocks; b++) {
-    //     printf("\nBlocco %d:\n", b);
-    //     print_ELL(H->blocks[b]);
-    // }
+    printf("HLL Matrix: %d blocchi, hack_size = %d\n", H->num_blocks, H->hack_size);
+    printf("Ultimo blocco: %d righe\n", last_block_rows);
 }

@@ -98,7 +98,7 @@ void save_results_to_csv(const char *filename, const char *matrix_name,
     double time_ms,double median_time_ms,
     double flops, double mflops, double gflops,
     double flops_median, double mflops_median, double gflops_median,
-    int passed, double diff, double rel_diff, int iterations);
+    int passed, int iterations);
 
 void get_performances_and_save_cuda(
     void (*matrix_mult)(void *, double *, double *, float *), 
