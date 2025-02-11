@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     int M, N, NZ;
     MatrixEntry *entries;
 
-    printf("Lettura della matrice...\n");
+    printf("\nLettura della matrice...\n");
     read_matrix_market(matrix_filename, &M, &N, &NZ, &entries);
     printf("Matrice %dx%d, nonzeri: %d\n", M, N, NZ);
 
@@ -38,7 +38,12 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(mode, "-serial") == 0) {
         printf("Calcolo delle prestazioni per la moltiplicazione seriale...\n");
-        printf("AIUTOOOO");
+
+        get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))serial_csr_mult,
+        A, x, y_serial,
+        matrix_name, M, N, NZ,
+        mode, y_serial);
+
         printf("Calcolo terminato.\n");
 
         free(entries);
@@ -85,5 +90,3 @@ int main(int argc, char *argv[]) {
     
     return 0;
 }
-
-

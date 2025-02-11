@@ -7,10 +7,12 @@ echo ">>> Cleaning..."
 make clean
 
 echo ">>> Building..."
-if [[ "$1" == "run_cuda" ]]; then
+if [[ "$1" == "run" ]]; then
+    make run MAT="$2" MODE="$3"
+elif [[ "$1" == "run_cuda" ]]; then
     make run_cuda MAT="$2" MODE="$3"
 else
-    echo "Usage: $0 run_cuda matrix.mtx mode"
+    echo "Usage: $0 [run|run_cuda] matrix.mtx mode"
     exit 1
 fi
 

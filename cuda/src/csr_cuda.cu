@@ -59,6 +59,8 @@ void cuda_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time) {
     cudaEventElapsedTime(elapsed_time, start, stop);
 
     // Deallocazione della memoria sulla GPU
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
     cudaFree(d_row_ptr);
     cudaFree(d_col_indices);
     cudaFree(d_values);

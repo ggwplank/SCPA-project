@@ -9,9 +9,9 @@ __global__ void matvec_hll_kernel(double *values, int *col_indices, double *x, d
 
     if (global_row >= num_blocks * hack_size) return; // Evita di superare i limiti
 
-    // Trova il blocco di appartenenza
+    // blocco di appartenenza
     int block_id = global_row / hack_size; 
-    if (block_id >= num_blocks) return;  // Controllo di sicurezza
+    if (block_id >= num_blocks) return;
 
     int block_start = block_offsets[block_id];   // Offset della sottomatrice nel vettore flat
     int rows = block_rows[block_id];      // Numero di righe nel blocco
@@ -24,41 +24,41 @@ __global__ void matvec_hll_kernel(double *values, int *col_indices, double *x, d
 
     for (int j = 0; j < maxnz; j++) {
         int col = col_indices[block_start + j * rows + local_row]; 
-        if (col >= 0) {
+        if (col >= 0)
             sum += values[block_start + j * rows  + local_row] * x[col];
-        }
     }
     y[global_row] = sum;  // Scrive nel vettore risultato globale
-
 }
 
 void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
-    printf("Eseguo il prodotto matrice-vettore con CUDA...\n");
     int num_blocks = H->num_blocks;
     int hack_size = H->hack_size;
 
-    // Calcola il numero totale di righe nella matrice HLL
+    // numero totale di righe nella matrice HLL
     int total_rows = 0;
-    for (int b = 0; b < num_blocks; b++) {
-        if (H->blocks[b] != NULL) {
+    for (int b = 0; b < num_blocks; b++)
+        if (H->blocks[b] != NULL)
             total_rows += H->blocks[b]->rows;
-        }
-    }
+    
 
-    // Allocazione per la struttura lineare di tutti i blocchi
+    // Allocazione per la struttura lineare di tutti i blocchi ($$$ non possiamo unirlo a quello di sopra?)
     int total_values = 0;
-    for (int b = 0; b < num_blocks; b++) {
+    for (int b = 0; b < num_blocks; b++)
         if (H->blocks[b] != NULL)
             total_values += H->blocks[b]->rows * H->blocks[b]->maxnz;
-    }
+
 
     double *h_values = (double*)malloc(total_values * sizeof(double));
     int *h_col_indices = (int*)malloc(total_values * sizeof(int));
     int *h_block_offsets = (int*)malloc(num_blocks * sizeof(int));
     int *h_block_nnz = (int*)malloc(num_blocks * sizeof(int));
     int *h_block_rows = (int*)malloc(num_blocks * sizeof(int));
+    if(h_values == NULL || h_col_indices == NULL || h_block_offsets == NULL || h_block_nnz == NULL || h_block_rows == NULL) {
+        perror("Errore di allocazione della memoria");
+        exit(1);
+    }
 
-    // Conversione della matrice HLL in formati compatibili con CUDA
+    // Conversione matrice HLL in formati compatibili con CUDA
     int offset = 0;
     for (int b = 0; b < num_blocks; b++) {
         ELLPackMatrix *block = H->blocks[b];
@@ -76,7 +76,6 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
         }
         offset += block->rows * block->maxnz;
     }
-
 
     // Allocazione memoria sulla GPU
     double *d_values, *d_x, *d_y;
@@ -113,7 +112,6 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     // Lancio del kernel
     matvec_hll_kernel<<<grid_size, block_size>>>(d_values, d_col_indices, d_x, d_y, d_block_offsets, d_block_nnz, d_block_rows, hack_size, num_blocks);
 
-
     // registrazione del tempo di esecuzione
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
@@ -123,8 +121,6 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
 
     // allocazioen del tempo
     cudaEventElapsedTime(elapsed_time, start, stop);
-
-
 
     // Pulizia della memoria
     cudaEventDestroy(start);
