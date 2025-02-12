@@ -37,7 +37,7 @@ modes=("-serial" "-ompCSR" "-ompHLL")
 
 THREADS=16
 
-echo ">>> Opening cuda..."
+echo ">>> Opening openmp..."
 cd openmp || exit 1  # Se fallisce, esce con errore
 
 echo ">>> Cleaning..."

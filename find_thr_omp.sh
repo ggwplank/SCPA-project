@@ -50,7 +50,7 @@ make clean
 echo ">>> Building..."
 make all
 
-for mat in "${sorted_matrices[@]}"; do
+for mat in "${matrices[@]}"; do
     for mode in "${modes[@]}"; do
         for threads in $(seq 1 $THREADS_MAX); do
             echo "Running with $threads threads on matrix $mat in mode $mode..."
