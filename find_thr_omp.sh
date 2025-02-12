@@ -33,31 +33,35 @@ matrices=(
     "Williams/webbase-1M/webbase-1M.mtx"
     "HB/west2021/west2021.mtx"
 )
-modes=("-serial" "-ompCSR" "-ompHLL")
 
-THREADS=16
+modes=("-ompCSR" "-ompHLL")
 
-echo ">>> Opening cuda..."
+THREADS_MAX=40
+OUTPUT_FILE="threads.csv"
+
+echo "Matrix,Mode,Threads,AvgTime(ms),AvgGFlops,BestTime(ms),BestGFlops" > "$OUTPUT_FILE"
+
+echo ">>> Opening openmp..."
 cd openmp || exit 1  # Se fallisce, esce con errore
 
 echo ">>> Cleaning..."
 make clean
 
 echo ">>> Building..."
-for mat in "${matrices[@]}"; do
+make all
+
+for mat in "${sorted_matrices[@]}"; do
     for mode in "${modes[@]}"; do
-        if [[ "$1" == "run" ]]; then
-            make run MAT="../../../matrici/MM/$mat" MODE="$mode"
-        elif [[ "$1" == "run_openmp" ]]; then
-            make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$THREADS"
-        else
-            echo "Usage: $0 [run|run_openmp]"
-            exit 1
-        fi
+        for threads in $(seq 1 $THREADS_MAX); do
+            echo "Running with $threads threads on matrix $mat in mode $mode..."
+            make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$threads"
+            
+            awk -F',' -v mat="$mat" -v mode="$mode" -v threads="$threads" 'NR>1 { print mat "," mode "," threads "," $7 "," $10 "," $9 "," $12 }' performance.csv >> "$OUTPUT_FILE"
+        done
     done
 done
 
 cd ..
 
-# Usage: (DALLA ROOT DEL PROGETTO, NON DALLA CARTELLA cuda)
-# ./cuda.sh run_cuda
+# Usage: (DALLA ROOT DEL PROGETTO, NON DALLA CARTELLA openmp)
+# ./threads.sh
