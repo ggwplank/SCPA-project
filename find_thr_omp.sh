@@ -33,13 +33,12 @@ matrices=(
     "Williams/webbase-1M/webbase-1M.mtx"
     "HB/west2021/west2021.mtx"
 )
-
 modes=("-ompCSR" "-ompHLL")
 
+THREADS_MIN=1
 THREADS_MAX=40
-OUTPUT_FILE="threads.csv"
 
-printf "Matrix,Mode,Threads,AvgTime(ms),AvgGFlops,BestTime(ms),BestGFlops\n" > "$OUTPUT_FILE"
+[ -f openmp/performance.csv ] && rm openmp/performance.csv
 
 echo ">>> Opening openmp..."
 cd openmp || exit 1  # Se fallisce, esce con errore
@@ -51,22 +50,12 @@ echo ">>> Building..."
 make all
 
 for mat in "${matrices[@]}"; do
-    mat_name=$(basename "$mat")
-
     for mode in "${modes[@]}"; do
-        for threads in $(seq 1 $THREADS_MAX); do
-            echo "Running with $threads threads on matrix $mat_name in mode $mode..."
-
-            > performance.csv
-            
-            make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$threads"
-            
-            awk -F',' -v mat="$mat_name" -v mode="$mode" -v threads="$threads" 'NR>1 { print mat "," mode "," threads "," $7 "," $10 "," $9 "," $12 }' performance.csv >> "$OUTPUT_FILE"
-        done
+            for t in $(seq $THREADS_MIN $THREADS_MAX); do
+                echo "Eseguo: matrice $mat, modalità $mode, THREADS=$t"
+                make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$t"
+            done
     done
 done
 
 cd ..
-
-# Usage: (DALLA ROOT DEL PROGETTO, NON DALLA CARTELLA openmp)
-# ./threads.sh
