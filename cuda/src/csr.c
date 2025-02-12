@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-
+#include <time.h>
 #include "utils.h"
 
 // nel CSR gli elementi devono essere memorizzati riga per riga
@@ -76,13 +76,21 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
     return A;
 }
 
-void serial_csr_mult(CSRMatrix *A, double *x, double *y) {
+void serial_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time) {
+    clock_t start, end;  
+    
+    start = clock(); 
     for (int i = 0; i < A->rows; i++) {
         y[i] = 0.0;
 
         for (int j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++)
             y[i] += A->values[j] * x[A->col_indices[j]];
         
+    }
+    end = clock(); 
+
+    if (elapsed_time != NULL){
+        *elapsed_time = ((float)(end - start) / CLOCKS_PER_SEC) * 1000.0;
     }
 }
 

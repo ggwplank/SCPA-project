@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     
     double *y_serial = allocate_result(M);
     printf("Moltiplicazione seriale...\n");
-    serial_csr_mult(A, x, y_serial);
+    serial_csr_mult(A, x, y_serial,NULL);
 
     if (strcmp(mode, "-serial") == 0) {
         printf("Calcolo delle prestazioni per la moltiplicazione seriale...\n");
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
         get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))serial_csr_mult,
         A, x, y_serial,
         matrix_name, M, N, NZ,
-        mode, y_serial);
+        mode, NULL);
 
         printf("Calcolo terminato.\n");
 

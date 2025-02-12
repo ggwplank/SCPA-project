@@ -29,6 +29,7 @@ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O3")
 
 # La directory per gli header
 include_directories(lib)
+include_directories(../../../cuda-samples/Common/)
 
 # Definizione dei file sorgente in C
 set(SOURCES

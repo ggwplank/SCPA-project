@@ -71,7 +71,7 @@ void get_performances_and_save_cuda(
     qsort(times + 1, REPETITIONS - 1, sizeof(double), compare_doubles);
     double median_time = (REPETITIONS - 1) % 2 == 0 
                          ? (times[(REPETITIONS - 1) / 2] + times[(REPETITIONS - 1) / 2 + 1]) / 2
-                         : times[REPETITIONS / 2];
+                         : times[(REPETITIONS-1) / 2];
     double median_time_ms = median_time;
 
     double best_time = times[1];
@@ -80,13 +80,13 @@ void get_performances_and_save_cuda(
             best_time = times[i];
     
     double flops = (2.0 * NZ) / total_time;
-    double gflops = flops / 1e9;
+    double gflops = flops / 1e6;
 
     double flops_median = (2.0 * NZ) / median_time;
-    double gflops_median = flops_median / 1e9;
+    double gflops_median = flops_median / 1e6;
 
     double best_flops = (2.0 * NZ) / best_time;
-    double best_gflops = best_flops / 1e9;
+    double best_gflops = best_flops / 1e6;
 
     int passed = 1;
 
