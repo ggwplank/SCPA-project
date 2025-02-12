@@ -6,9 +6,6 @@
 
 #include "utils.h"
 
-#define THREADS_MIN 1
-#define THREADS_MAX 40
-
 int main(int argc, char *argv[]) {
     if (argc < 3) {
         printf("Uso: %s <file_matrix_market> <-serial/-ompCSR/-ompHLL> {num threads}\n", argv[0]);
@@ -21,10 +18,7 @@ int main(int argc, char *argv[]) {
 
     const char *mode = argv[2];
 
-    int t_min = THREADS_MIN;
-    int t_max = THREADS_MAX;
-
-    //int num_threads = (argc == 4) ? atoi(argv[3]) : omp_get_max_threads();
+    int num_threads = (argc == 4) ? atoi(argv[3]) : omp_get_max_threads();
 
     int M, N, NZ;
     MatrixEntry *entries;
@@ -55,40 +49,35 @@ int main(int argc, char *argv[]) {
     }
 
     else if (strcmp(mode, "-ompCSR") == 0) {
-        for (int t = t_min; t <= t_max; t++) {
-            double *y_omp_csr = allocate_result(M);
+        double *y_omp_csr = allocate_result(M);
 
-            omp_set_num_threads(t);
-            printf("Moltiplicazione parallela con CSR e %d thread...\n", t);
-            get_performances_and_save((void (*)(void *, double *, double *))omp_csr_mult,
-                A, x, y_omp_csr,
-                matrix_name, M, N, NZ,
-                mode, t, y_serial);
+        omp_set_num_threads(num_threads);
+        printf("Moltiplicazione parallela con CSR e %d thread...\n", num_threads);
+        get_performances_and_save((void (*)(void *, double *, double *))omp_csr_mult,
+            A, x, y_omp_csr,
+            matrix_name, M, N, NZ,
+            mode, num_threads, y_serial);
 
-            free(y_omp_csr);
-        }
+        free(y_omp_csr);
     }
 
     else if (strcmp(mode, "-ompHLL") == 0) {
         
-
         printf("Conversione matrice in formato HLL con hack_size = %d...\n", HACK_SIZE);
         HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, HACK_SIZE);
 
         print_HLL(A_hll);
 
-        for (int t = t_min; t <= t_max; t++) {
-            double *y_omp_hll = allocate_result(M);
-            omp_set_num_threads(t);
+        double *y_omp_hll = allocate_result(M);
+        omp_set_num_threads(num_threads);
+
+        printf("Moltiplicazione parallela con HLL e %d thread...\n", num_threads);
+        get_performances_and_save((void (*)(void *, double *, double *))omp_hll_mult,
+            A_hll, x, y_omp_hll,
+            matrix_name, M, N, NZ,
+            mode, num_threads, y_serial);
     
-            printf("Moltiplicazione parallela con HLL e %d thread...\n", t);
-            get_performances_and_save((void (*)(void *, double *, double *))omp_hll_mult,
-                A_hll, x, y_omp_hll,
-                matrix_name, M, N, NZ,
-                mode, t, y_serial);
-        
-            free(y_omp_hll);
-        }
+        free(y_omp_hll);
         free_HLL(A_hll);
     }
 

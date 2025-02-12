@@ -1,16 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
 
-# Versioni consigliate per CUDA
-
-# Versione CUDA	    Versione minima CMake
-# CUDA 9	            3.8
-# CUDA 10	            3.10
-# CUDA 11	            3.17
-# CUDA 12	            3.20+
-
-# Se non sai che versione di Cmake hai:
-# cmake --version
-
 project(parallel_matrix_vector CUDA CXX)
 
 # Abilita il supporto per CUDA in CMake

@@ -36,12 +36,14 @@ matrices=(
 modes=("-serial" "-cudaCSR" "-cudaHLL")
 
 echo ">>> Opening cuda..."
-cd cuda || exit 1  # Se fallisce, esce con errore
+cd cuda || exit 1
 
 echo ">>> Cleaning..."
 make clean
 
 echo ">>> Building..."
+make all
+
 for mat in "${matrices[@]}"; do
     for mode in "${modes[@]}"; do
         if [[ "$1" == "run" ]]; then

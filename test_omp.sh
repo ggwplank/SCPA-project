@@ -35,7 +35,7 @@ matrices=(
 )
 modes=("-serial" "-ompCSR" "-ompHLL")
 
-THREADS=16
+THREADS=34
 
 echo ">>> Opening openmp..."
 cd openmp || exit 1  # Se fallisce, esce con errore
@@ -44,6 +44,8 @@ echo ">>> Cleaning..."
 make clean
 
 echo ">>> Building..."
+make all
+
 for mat in "${matrices[@]}"; do
     for mode in "${modes[@]}"; do
         if [[ "$1" == "run" ]]; then
@@ -58,6 +60,3 @@ for mat in "${matrices[@]}"; do
 done
 
 cd ..
-
-# Usage: (DALLA ROOT DEL PROGETTO, NON DALLA CARTELLA cuda)
-# ./cuda.sh run_cuda
