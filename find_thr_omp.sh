@@ -38,6 +38,8 @@ modes=("-ompCSR" "-ompHLL")
 THREADS_MIN=1
 THREADS_MAX=40
 
+[ -f openmp/performance.csv ] && rm openmp/performance.csv
+
 echo ">>> Opening openmp..."
 cd openmp || exit 1  # Se fallisce, esce con errore
 
@@ -53,10 +55,6 @@ for mat in "${matrices[@]}"; do
                 echo "Eseguo: matrice $mat, modalità $mode, THREADS=$t"
                 make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$t"
             done
-        else
-            echo "???"
-            exit 1
-        fi
     done
 done
 
