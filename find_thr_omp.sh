@@ -18,6 +18,7 @@ matrices=(
     "HB/mcfe/mcfe.mtx"
     "Bai/mhd4800a/mhd4800a.mtx"
     "Bai/mhda416/mhda416.mtx"
+    "Bai/mhda416/mhda416.mtx"
     "Janna/ML_Laplace/ML_Laplace.mtx"
     "Schenk/nlpkkt80/nlpkkt80.mtx"
     "Simon/olafu/olafu.mtx"
@@ -32,15 +33,13 @@ matrices=(
     "Williams/webbase-1M/webbase-1M.mtx"
     "HB/west2021/west2021.mtx"
 )
-
 modes=("-ompCSR" "-ompHLL")
-THREADS_MAX=40
-OUTPUT_FILE="threads.csv"
 
-echo -e "Matrix,Mode,Threads,AvgTime(ms),AvgGFlops,BestTime(ms),BestGFlops" > "$OUTPUT_FILE"
+THREADS_MIN=1
+THREADS_MAX=40
 
 echo ">>> Opening openmp..."
-cd openmp || exit 1  
+cd openmp || exit 1  # Se fallisce, esce con errore
 
 echo ">>> Cleaning..."
 make clean
@@ -48,47 +47,17 @@ make clean
 echo ">>> Building..."
 make all
 
-# Funzione per eseguire il test su una singola configurazione
-run_test() {
-    local mat="$1"
-    local mode="$2"
-    local threads="$3"
-
-    mat_name=$(basename "$mat")
-
-    echo "Running with $threads threads on matrix $mat_name in mode $mode..."
-
-    make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$threads"
-
-    # Aspetta che il file performance.csv sia scritto
-    while [ ! -s performance.csv ]; do sleep 0.1; done
-
-    # Se performance.csv è vuoto, salta questa iterazione
-    if [ ! -s performance.csv ]; then
-        echo "performance.csv è vuoto per $mat_name con $threads threads in modalità $mode!"
-        return
-    fi
-
-    # Scrive i dati nel file CSV
-    awk -F',' -v mat="$mat_name" -v mode="$mode" -v threads="$threads" \
-        'NR>1 { print mat "," mode "," threads "," $7 "," $10 "," $9 "," $12 }' performance.csv >> "$OUTPUT_FILE"
-}
-
-# Lancia i test in parallelo per ogni combinazione di (matrice, modalità, numero di thread)
 for mat in "${matrices[@]}"; do
     for mode in "${modes[@]}"; do
-        for threads in $(seq 1 $THREADS_MAX); do
-            run_test "$mat" "$mode" "$threads" &
-            
-            # Limita il numero di processi paralleli per non sovraccaricare la CPU
-            if [[ $(jobs -r -p | wc -l) -ge $(nproc) ]]; then
-                wait -n
-            fi
-        done
+            for t in $(seq $THREADS_MIN $THREADS_MAX); do
+                echo "Eseguo: matrice $mat, modalità $mode, THREADS=$t"
+                make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$t"
+            done
+        else
+            echo "???"
+            exit 1
+        fi
     done
 done
-
-# Aspetta la fine di tutti i processi paralleli
-wait
 
 cd ..
