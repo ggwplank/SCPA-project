@@ -99,3 +99,4 @@ void cuda_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time) {
     cudaFree(d_x);
     cudaFree(d_y);
 }
+
