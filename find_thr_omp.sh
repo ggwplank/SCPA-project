@@ -39,7 +39,7 @@ modes=("-ompCSR" "-ompHLL")
 THREADS_MAX=40
 OUTPUT_FILE="threads.csv"
 
-echo "Matrix,Mode,Threads,AvgTime(ms),AvgGFlops,BestTime(ms),BestGFlops" > "$OUTPUT_FILE"
+printf "Matrix,Mode,Threads,AvgTime(ms),AvgGFlops,BestTime(ms),BestGFlops\n" > "$OUTPUT_FILE"
 
 echo ">>> Opening openmp..."
 cd openmp || exit 1  # Se fallisce, esce con errore
@@ -51,12 +51,17 @@ echo ">>> Building..."
 make all
 
 for mat in "${matrices[@]}"; do
+    mat_name=$(basename "$mat")
+
     for mode in "${modes[@]}"; do
         for threads in $(seq 1 $THREADS_MAX); do
-            echo "Running with $threads threads on matrix $mat in mode $mode..."
+            echo "Running with $threads threads on matrix $mat_name in mode $mode..."
+
+            > performance.csv
+            
             make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$threads"
             
-            awk -F',' -v mat="$mat" -v mode="$mode" -v threads="$threads" 'NR>1 { print mat "," mode "," threads "," $7 "," $10 "," $9 "," $12 }' performance.csv >> "$OUTPUT_FILE"
+            awk -F',' -v mat="$mat_name" -v mode="$mode" -v threads="$threads" 'NR>1 { print mat "," mode "," threads "," $7 "," $10 "," $9 "," $12 }' performance.csv >> "$OUTPUT_FILE"
         done
     done
 done
