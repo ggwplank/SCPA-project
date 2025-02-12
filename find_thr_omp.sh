@@ -18,7 +18,6 @@ matrices=(
     "HB/mcfe/mcfe.mtx"
     "Bai/mhd4800a/mhd4800a.mtx"
     "Bai/mhda416/mhda416.mtx"
-    "Bai/mhda416/mhda416.mtx"
     "Janna/ML_Laplace/ML_Laplace.mtx"
     "Schenk/nlpkkt80/nlpkkt80.mtx"
     "Simon/olafu/olafu.mtx"
@@ -35,14 +34,13 @@ matrices=(
 )
 
 modes=("-ompCSR" "-ompHLL")
-
 THREADS_MAX=40
 OUTPUT_FILE="threads.csv"
 
-printf "Matrix,Mode,Threads,AvgTime(ms),AvgGFlops,BestTime(ms),BestGFlops\n" > "$OUTPUT_FILE"
+echo -e "Matrix,Mode,Threads,AvgTime(ms),AvgGFlops,BestTime(ms),BestGFlops" > "$OUTPUT_FILE"
 
 echo ">>> Opening openmp..."
-cd openmp || exit 1  # Se fallisce, esce con errore
+cd openmp || exit 1  
 
 echo ">>> Cleaning..."
 make clean
@@ -50,23 +48,47 @@ make clean
 echo ">>> Building..."
 make all
 
-for mat in "${matrices[@]}"; do
+# Funzione per eseguire il test su una singola configurazione
+run_test() {
+    local mat="$1"
+    local mode="$2"
+    local threads="$3"
+
     mat_name=$(basename "$mat")
 
+    echo "Running with $threads threads on matrix $mat_name in mode $mode..."
+
+    make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$threads"
+
+    # Aspetta che il file performance.csv sia scritto
+    while [ ! -s performance.csv ]; do sleep 0.1; done
+
+    # Se performance.csv è vuoto, salta questa iterazione
+    if [ ! -s performance.csv ]; then
+        echo "performance.csv è vuoto per $mat_name con $threads threads in modalità $mode!"
+        return
+    fi
+
+    # Scrive i dati nel file CSV
+    awk -F',' -v mat="$mat_name" -v mode="$mode" -v threads="$threads" \
+        'NR>1 { print mat "," mode "," threads "," $7 "," $10 "," $9 "," $12 }' performance.csv >> "$OUTPUT_FILE"
+}
+
+# Lancia i test in parallelo per ogni combinazione di (matrice, modalità, numero di thread)
+for mat in "${matrices[@]}"; do
     for mode in "${modes[@]}"; do
         for threads in $(seq 1 $THREADS_MAX); do
-            echo "Running with $threads threads on matrix $mat_name in mode $mode..."
-
-            > performance.csv
+            run_test "$mat" "$mode" "$threads" &
             
-            make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$threads"
-            
-            awk -F',' -v mat="$mat_name" -v mode="$mode" -v threads="$threads" 'NR>1 { print mat "," mode "," threads "," $7 "," $10 "," $9 "," $12 }' performance.csv >> "$OUTPUT_FILE"
+            # Limita il numero di processi paralleli per non sovraccaricare la CPU
+            if [[ $(jobs -r -p | wc -l) -ge $(nproc) ]]; then
+                wait -n
+            fi
         done
     done
 done
 
-cd ..
+# Aspetta la fine di tutti i processi paralleli
+wait
 
-# Usage: (DALLA ROOT DEL PROGETTO, NON DALLA CARTELLA openmp)
-# ./threads.sh
+cd ..
