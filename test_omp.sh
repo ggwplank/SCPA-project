@@ -47,8 +47,6 @@ echo ">>> Rimozione file performance e speedup..."
 rm -f performance.csv speedup.csv
 
 echo ">>> Building..."
-make all
-
 for mat in "${matrices[@]}"; do
     if [[ "$1" == "run" ]]; then
         make run MAT="../../../matrici/MM/$mat"
@@ -58,7 +56,6 @@ for mat in "${matrices[@]}"; do
         echo "Usage: $0 [run|run_openmp]"
         exit 1
     fi
-    done
 done
 
 cd ..

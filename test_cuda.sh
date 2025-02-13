@@ -41,9 +41,10 @@ cd cuda || exit 1
 echo ">>> Cleaning..."
 make clean
 
-echo ">>> Building..."
-make all
+echo ">>> Rimozione file performance e speedup..."
+rm -f performance.csv speedup.csv
 
+echo ">>> Building..."
 for mat in "${matrices[@]}"; do
     for mode in "${modes[@]}"; do
         if [[ "$1" == "run" ]]; then
