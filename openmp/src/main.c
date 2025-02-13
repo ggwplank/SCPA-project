@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     int M, N, NZ;
     MatrixEntry *entries;
 
-    printf("Lettura della matrice %s...\n", matrix_name);
+    printf("\n\nLettura della matrice %s...\n", matrix_name);
     read_matrix_market(matrix_filename, &M, &N, &NZ, &entries);
     printf("Matrice %dx%d, nonzeri: %d\n", M, N, NZ);
 
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
     double *y_omp_csr = allocate_result(M);
     omp_set_num_threads(num_threads);
-    printf("\nMoltiplicazione parallela con CSR e %d thread...\n", num_threads);
+    printf("Moltiplicazione parallela con CSR e %d thread...\n", num_threads);
     get_performances_and_save((void (*)(void *, double *, double *))omp_csr_mult,
         A, x, y_omp_csr,
         matrix_name, M, N, NZ,
