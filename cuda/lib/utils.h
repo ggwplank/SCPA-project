@@ -9,6 +9,7 @@
 #define REPETITIONS 5
 #define REL_TOL 1e-6
 #define ABS_TOL 1e-9
+#define HACK_SIZE 2048
 
 
 

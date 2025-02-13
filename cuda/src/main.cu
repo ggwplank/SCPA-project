@@ -63,10 +63,8 @@ int main(int argc, char *argv[]) {
     }
 
     else if (strcmp(mode, "-cudaHLL") == 0) {    
-        double avg_nnz = (double)NZ / M;
-        int hack_size = 2048 * ((int)(avg_nnz / 10) + 1);
-        printf("Conversione matrice in formato HLL con hack_size = %d...\n", hack_size);
-        HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
+        printf("Conversione matrice in formato HLL con hack_size = %d...\n", HACK_SIZE);
+        HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, HACK_SIZE);
 
         double *y_cuda_hll = allocate_result(M);
 
