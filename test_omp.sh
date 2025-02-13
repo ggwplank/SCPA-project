@@ -43,19 +43,21 @@ cd openmp || exit 1  # Se fallisce, esce con errore
 echo ">>> Cleaning..."
 make clean
 
+echo ">>> Rimozione file performance e speedup..."
+rm -f performance.csv speedup.csv
+
 echo ">>> Building..."
 make all
 
 for mat in "${matrices[@]}"; do
-    for mode in "${modes[@]}"; do
-        if [[ "$1" == "run" ]]; then
-            make run MAT="../../../matrici/MM/$mat" MODE="$mode"
-        elif [[ "$1" == "run_openmp" ]]; then
-            make run_openmp MAT="../../../matrici/MM/$mat" MODE="$mode" THREADS="$THREADS"
-        else
-            echo "Usage: $0 [run|run_openmp]"
-            exit 1
-        fi
+    if [[ "$1" == "run" ]]; then
+        make run MAT="../../../matrici/MM/$mat"
+    elif [[ "$1" == "run_openmp" ]]; then
+        make run_openmp MAT="../../../matrici/MM/$mat" THREADS="$THREADS"
+    else
+        echo "Usage: $0 [run|run_openmp]"
+        exit 1
+    fi
     done
 done
 
