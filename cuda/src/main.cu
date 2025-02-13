@@ -42,8 +42,6 @@ int main(int argc, char *argv[]) {
 
     printf("Calcolo terminato.\n");
 
-    free(entries);
-
     double *y_cuda_csr = allocate_result(M);
 
     printf("Moltiplicazione parallela con CUDA e formato CSR...\n");
@@ -53,17 +51,14 @@ int main(int argc, char *argv[]) {
     matrix_name, M, N, NZ,
     "-cudaCSR", y_serial);
 
-    free(entries);
     double avg_nnz = (double)NZ / M;
     int hack_size = 2048 * ((int)(avg_nnz / 10) + 1);
 
     printf("Conversione matrice in formato HLL con hack_size = %d...\n", hack_size);
     HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
     print_HLL(A_hll);
-
     double *y_cuda_hll = allocate_result(M);
 
-    print_HLL(A_hll);
     
     printf("Moltiplicazione parallela con CUDA e formato CSR...\n");
     get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))matvec_hll_cuda,
@@ -73,8 +68,7 @@ int main(int argc, char *argv[]) {
 
     free_HLL(A_hll);
     free(y_cuda_hll);
-
-
+    free(entries);
     free_CSR(A);
     free(y_serial);
     free(x);
