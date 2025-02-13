@@ -75,9 +75,12 @@ void read_matrix_market(const char *filename, int *M, int *N, int *NZ, MatrixEnt
 
     // ricostruzione parte mancante se matrice è simmetrica
     if (mm_is_symmetric(matcode)) {
-        int newNZ = (*NZ) * 2;
+        int real_nz = *NZ;
+        for (int i = 0; i < *NZ; i++)
+            if ((*entries)[i].row != (*entries)[i].col)
+                real_nz++;
 
-        MatrixEntry *expandedEntries = (MatrixEntry *)malloc(newNZ * sizeof(MatrixEntry));
+        MatrixEntry *expandedEntries = (MatrixEntry *)malloc(real_nz * sizeof(MatrixEntry));
         if (expandedEntries == NULL) {
             perror("Errore di allocazione memoria per matrice simmetrica.");
             free(*entries);
@@ -98,6 +101,6 @@ void read_matrix_market(const char *filename, int *M, int *N, int *NZ, MatrixEnt
         free(*entries);
 
         *entries = expandedEntries;
-        *NZ = count;
+        *NZ = real_nz;
     }
 }

@@ -10,7 +10,7 @@ echo ">>> Building..."
 if [[ "$1" == "run" ]]; then
     make run MAT="$2"
 elif [[ "$1" == "run_openmp" ]]; then
-    make run_openmp MAT="$2"THREADS="$3"
+    make run_openmp MAT="$2" THREADS="$3"
 else
     echo "Usage: $0 [run|run_openmp] matrix.mtx mode {num_threads}"
     exit 1
