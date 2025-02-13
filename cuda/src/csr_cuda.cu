@@ -168,9 +168,10 @@ void cuda_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time) {
 
 void select_and_run_cuda_csr(CSRMatrix *A, double *x, double *y, float *elapsed_time) {
     int avg_nnz_per_row = A->nnz / A->rows;
-
+    double density = (double)A->nnz / A->rows;
+    density /= A->cols;
     // Euristica per scegliere il kernel
-    if (A->rows < 1e6 || avg_nnz_per_row < 30) {
+    if (avg_nnz_per_row < 30 || density > 1e-3) {
         // Matrici piccole o con pochi elementi per riga -> Kernel row-based (più semplice)
         cuda_csr_mult(A, x, y, elapsed_time);
     } else {
