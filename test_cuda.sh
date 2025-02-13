@@ -46,16 +46,14 @@ rm -f performance.csv speedup.csv
 
 echo ">>> Building..."
 for mat in "${matrices[@]}"; do
-    for mode in "${modes[@]}"; do
-        if [[ "$1" == "run" ]]; then
-            make run MAT="../../../matrici/MM/$mat" MODE="$mode"
-        elif [[ "$1" == "run_cuda" ]]; then
-            make run_cuda MAT="../../../matrici/MM/$mat" MODE="$mode"
-        else
-            echo "Usage: $0 [run|run_cuda]"
-            exit 1
-        fi
-    done
+    if [[ "$1" == "run" ]]; then
+        make run MAT="../../../matrici/MM/$mat"
+    elif [[ "$1" == "run_cuda" ]]; then
+        make run_cuda MAT="../../../matrici/MM/$mat"
+    else
+        echo "Usage: $0 [run|run_cuda]"
+        exit 1
+    fi
 done
 
 cd ..

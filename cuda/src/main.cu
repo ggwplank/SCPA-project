@@ -16,8 +16,6 @@ int main(int argc, char *argv[]) {
     const char *matrix_name = strrchr(matrix_filename, '/');
     matrix_name = (matrix_name) ? matrix_name + 1 : matrix_filename;
 
-    const char *mode = argv[2];
-
     int M, N, NZ;
     MatrixEntry *entries;
 
@@ -35,54 +33,47 @@ int main(int argc, char *argv[]) {
     double *y_serial = allocate_result(M);
     printf("Moltiplicazione seriale...\n");
     serial_csr_mult(A, x, y_serial,NULL);
+    printf("Calcolo delle prestazioni per la moltiplicazione seriale...\n");
 
-    if (strcmp(mode, "-serial") == 0) {
-        printf("Calcolo delle prestazioni per la moltiplicazione seriale...\n");
+    get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))serial_csr_mult,
+    A, x, y_serial,
+    matrix_name, M, N, NZ,
+    "-serial", NULL);
 
-        get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))serial_csr_mult,
-        A, x, y_serial,
-        matrix_name, M, N, NZ,
-        mode, NULL);
+    printf("Calcolo terminato.\n");
 
-        printf("Calcolo terminato.\n");
+    free(entries);
 
-        free(entries);
-    }
+    double *y_cuda_csr = allocate_result(M);
 
-    else if (strcmp(mode, "-cudaCSR") == 0) {
-        double *y_cuda_csr = allocate_result(M);
+    printf("Moltiplicazione parallela con CUDA e formato CSR...\n");
 
-        printf("Moltiplicazione parallela con CUDA e formato CSR...\n");
+    get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))select_and_run_cuda_csr,
+    A, x, y_cuda_csr,
+    matrix_name, M, N, NZ,
+    "-cudaCSR", y_serial);
 
-        get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))select_and_run_cuda_csr,
-        A, x, y_cuda_csr,
-        matrix_name, M, N, NZ,
-        mode, y_serial);
+    free(entries);
+    double avg_nnz = (double)NZ / M;
+    int hack_size = 2048 * ((int)(avg_nnz / 10) + 1);
 
-        free(entries);
-    }
+    printf("Conversione matrice in formato HLL con hack_size = %d...\n", hack_size);
+    HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
+    print_HLL(A_hll);
 
-    else if (strcmp(mode, "-cudaHLL") == 0) {    
-        printf("Conversione matrice in formato HLL con hack_size = %d...\n", HACK_SIZE);
-        HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, HACK_SIZE);
+    double *y_cuda_hll = allocate_result(M);
 
-        double *y_cuda_hll = allocate_result(M);
+    print_HLL(A_hll);
+    
+    printf("Moltiplicazione parallela con CUDA e formato CSR...\n");
+    get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))matvec_hll_cuda,
+    A_hll, x, y_cuda_hll,
+    matrix_name, M, N, NZ,
+    "-cudaHLL", y_serial);
 
-        print_HLL(A_hll);
-        
-        printf("Moltiplicazione parallela con CUDA e formato CSR...\n");
-        get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))matvec_hll_cuda,
-        A_hll, x, y_cuda_hll,
-        matrix_name, M, N, NZ,
-        mode, y_serial);
+    free_HLL(A_hll);
+    free(y_cuda_hll);
 
-        free_HLL(A_hll);
-        free(y_cuda_hll);
-    }
-
-    else {
-        printf("Le possibili modalità sono: -serial, -cudaCSR, -cudaHLL\n");
-    }
 
     free_CSR(A);
     free(y_serial);
