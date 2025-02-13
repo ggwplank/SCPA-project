@@ -42,6 +42,10 @@ void serial_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time);
 
 void cuda_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time);
 
+void cuda_csr_mult_warp(CSRMatrix *A, double *x, double *y, float *elapsed_time);
+
+void select_and_run_cuda_csr(CSRMatrix *A, double *x, double *y, float *elapsed_time);
+
 void free_CSR(CSRMatrix *A);
 
 

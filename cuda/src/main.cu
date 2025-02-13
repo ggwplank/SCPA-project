@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 
         printf("Moltiplicazione parallela con CUDA e formato CSR...\n");
 
-        get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))cuda_csr_mult,
+        get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))select_and_run_cuda_csr,
         A, x, y_cuda_csr,
         matrix_name, M, N, NZ,
         mode, y_serial);
