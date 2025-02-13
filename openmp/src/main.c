@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     int M, N, NZ;
     MatrixEntry *entries;
 
-    printf("\nLettura della matrice...\n");
+    printf("Lettura della matrice %s...\n", matrix_name);
     read_matrix_market(matrix_filename, &M, &N, &NZ, &entries);
     printf("Matrice %dx%d, nonzeri: %d\n", M, N, NZ);
 
@@ -49,16 +49,18 @@ int main(int argc, char *argv[]) {
 
     double *y_omp_csr = allocate_result(M);
     omp_set_num_threads(num_threads);
-    printf("Moltiplicazione parallela con CSR e %d thread...\n", num_threads);
+    printf("\nMoltiplicazione parallela con CSR e %d thread...\n", num_threads);
     get_performances_and_save((void (*)(void *, double *, double *))omp_csr_mult,
         A, x, y_omp_csr,
         matrix_name, M, N, NZ,
         "-ompCSR", num_threads, y_serial);
     free(y_omp_csr);
 
+    double avg_nnz = (double)NZ / M;
+    int hack_size = 2048 * ((int)(avg_nnz / 10) + 1);
 
-    printf("Conversione matrice in formato HLL con hack_size = %d...\n", HACK_SIZE);
-    HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, HACK_SIZE);
+    printf("Conversione matrice in formato HLL con hack_size = %d...\n", hack_size);
+    HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, hack_size);
     print_HLL(A_hll);
 
     double *y_omp_hll = allocate_result(M);
