@@ -7,8 +7,8 @@
 
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
-        printf("Uso: %s <file_matrix_market> <-serial/-cudaCSR/-cudaHLL>\n", argv[0]);
+    if (argc < 2) {
+        printf("Uso: %s <file_matrix_market>\n", argv[0]);
         return 1;
     }
 
