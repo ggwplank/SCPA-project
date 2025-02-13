@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
     const char *mode = argv[2];
 
-    int num_threads = (argc == 4) ? atoi(argv[3]) : omp_get_max_threads();
+    int num_threads = (argc == 3) ? atoi(argv[2]) : omp_get_max_threads();
 
     int M, N, NZ;
     MatrixEntry *entries;
@@ -38,52 +38,39 @@ int main(int argc, char *argv[]) {
     printf("Moltiplicazione seriale...\n");
     serial_csr_mult(A, x, y_serial);
 
-    if (strcmp(mode, "-serial") == 0) {
-        printf("Calcolo delle prestazioni per la moltiplicazione seriale...\n");
-        get_performances_and_save((void (*)(void *, double *, double *))serial_csr_mult,
-            A, x, y_serial,
-            matrix_name, M, N, NZ,
-            mode, 1, NULL);
-
-        printf("Calcolo terminato.\n");
-    }
-
-    else if (strcmp(mode, "-ompCSR") == 0) {
-        double *y_omp_csr = allocate_result(M);
-
-        omp_set_num_threads(num_threads);
-        printf("Moltiplicazione parallela con CSR e %d thread...\n", num_threads);
-        get_performances_and_save((void (*)(void *, double *, double *))omp_csr_mult,
-            A, x, y_omp_csr,
-            matrix_name, M, N, NZ,
-            mode, num_threads, y_serial);
-
-        free(y_omp_csr);
-    }
-
-    else if (strcmp(mode, "-ompHLL") == 0) {
-        
-        printf("Conversione matrice in formato HLL con hack_size = %d...\n", HACK_SIZE);
-        HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, HACK_SIZE);
-
-        print_HLL(A_hll);
-
-        double *y_omp_hll = allocate_result(M);
-        omp_set_num_threads(num_threads);
-
-        printf("Moltiplicazione parallela con HLL e %d thread...\n", num_threads);
-        get_performances_and_save((void (*)(void *, double *, double *))omp_hll_mult,
-            A_hll, x, y_omp_hll,
-            matrix_name, M, N, NZ,
-            mode, num_threads, y_serial);
     
-        free(y_omp_hll);
-        free_HLL(A_hll);
-    }
+    printf("Calcolo delle prestazioni per la moltiplicazione seriale...\n");
+    get_performances_and_save((void (*)(void *, double *, double *))serial_csr_mult,
+        A, x, y_serial,
+        matrix_name, M, N, NZ,
+        "-serial", 1, NULL);
+    printf("Calcolo terminato.\n");
 
-    else {
-        printf("Le possibili modalità sono: -serial, -ompCSR, -ompHLL\n");
-    }
+
+    double *y_omp_csr = allocate_result(M);
+    omp_set_num_threads(num_threads);
+    printf("Moltiplicazione parallela con CSR e %d thread...\n", num_threads);
+    get_performances_and_save((void (*)(void *, double *, double *))omp_csr_mult,
+        A, x, y_omp_csr,
+        matrix_name, M, N, NZ,
+        "-ompCSR", num_threads, y_serial);
+    free(y_omp_csr);
+
+
+    printf("Conversione matrice in formato HLL con hack_size = %d...\n", HACK_SIZE);
+    HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, HACK_SIZE);
+    print_HLL(A_hll);
+
+    double *y_omp_hll = allocate_result(M);
+    omp_set_num_threads(num_threads);
+    printf("Moltiplicazione parallela con HLL e %d thread...\n", num_threads);
+    get_performances_and_save((void (*)(void *, double *, double *))omp_hll_mult,
+        A_hll, x, y_omp_hll,
+        matrix_name, M, N, NZ,
+        "-ompHLL", num_threads, y_serial);
+    
+    free(y_omp_hll);
+    free_HLL(A_hll);
     
     free_CSR(A);
     free(y_serial);
