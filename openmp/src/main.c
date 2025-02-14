@@ -7,7 +7,7 @@
 #include "utils.h"
 
 int main(int argc, char *argv[]) {
-    if (argc < 3) {
+    if (argc < 2) {
         printf("Uso: %s <file_matrix_market> <-serial/-ompCSR/-ompHLL> {num threads}\n", argv[0]);
         return 1;
     }
@@ -15,8 +15,6 @@ int main(int argc, char *argv[]) {
     const char *matrix_filename = argv[1];
     const char *matrix_name = strrchr(matrix_filename, '/');
     matrix_name = (matrix_name) ? matrix_name + 1 : matrix_filename;
-
-    const char *mode = argv[2];
 
     int num_threads = (argc == 3) ? atoi(argv[2]) : omp_get_max_threads();
 
