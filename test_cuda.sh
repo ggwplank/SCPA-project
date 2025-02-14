@@ -59,5 +59,7 @@ done
 
 cd ..
 
+./speedup_cuda.sh
+
 # Usage: (DALLA ROOT DEL PROGETTO, NON DALLA CARTELLA cuda)
 # ./cuda.sh run_cuda
