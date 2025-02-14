@@ -8,9 +8,9 @@ make clean
 
 echo ">>> Building..."
 if [[ "$1" == "run" ]]; then
-    make run MAT="$2" MODE="$3"
+    make run MAT="$2"
 elif [[ "$1" == "run_cuda" ]]; then
-    make run_cuda MAT="$2" MODE="$3"
+    make run_cuda MAT="$2" 
 else
     echo "Usage: $0 [run|run_cuda] matrix.mtx mode"
     exit 1
