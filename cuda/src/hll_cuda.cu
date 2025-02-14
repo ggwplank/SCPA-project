@@ -92,7 +92,7 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     cudaMemcpy(d_block_rows, h_block_rows, num_blocks * sizeof(int), cudaMemcpyHostToDevice);
 
     // Configurazione del kernel
-    int block_size = 512;
+    int block_size = 1024;
     int num_threads = num_blocks * hack_size;
     int grid_size = (num_threads + block_size - 1) / block_size;
 

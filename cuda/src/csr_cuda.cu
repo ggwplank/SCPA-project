@@ -5,7 +5,7 @@
 #include "utils.h"
 
 #define WARP_SIZE 32
-#define BLOCK_SIZE 512  // Multiplo di 32
+#define BLOCK_SIZE 1024
 
 __global__ void csr_mult_warp_cuda_kernel(int num_rows, int *d_row_ptr, int *d_col_indices, 
                                      double *d_values, double *d_x, double *d_y) {
@@ -132,8 +132,7 @@ void cuda_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time) {
     cudaMemcpy(d_x, x, A->cols * sizeof(double), cudaMemcpyHostToDevice);
 
     // Configurazione e lancio del kernel CUDA
-    int blockSize = 512;
-    int gridSize = (A->rows + blockSize - 1) / blockSize;
+    int gridSize = (A->rows + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     // Configurazione per il calcolo del tempo di esecuzione
     cudaEvent_t start, stop;
@@ -142,7 +141,7 @@ void cuda_csr_mult(CSRMatrix *A, double *x, double *y, float *elapsed_time) {
     
     cudaEventRecord(start, 0);
 
-    csr_mult_cuda_kernel<<<gridSize, blockSize>>>(A->rows, d_row_ptr, d_col_indices, d_values, d_x, d_y);
+    csr_mult_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(A->rows, d_row_ptr, d_col_indices, d_values, d_x, d_y);
 
     // registrazione del tempo di esecuzione
     cudaEventRecord(stop, 0);

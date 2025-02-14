@@ -10,6 +10,8 @@
 #define REL_TOL 1e-6
 #define ABS_TOL 1e-9
 #define HACK_SIZE 2048
+#define WARP_SIZE 32
+#define BLOCK_SIZE 1024
 
 
 
