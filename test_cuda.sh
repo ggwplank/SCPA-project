@@ -39,6 +39,9 @@ matrices=(
 echo ">>> Opening cuda..."
 cd cuda || exit 1
 
+echo ">>> Rimozione file performance e speedup..."
+rm -f performance.csv speedup.csv
+
 echo ">>> Cleaning..."
 make clean
 
