@@ -39,10 +39,25 @@ HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_s
             }
         }
 
-        if (block_nz > 0)
+        if (block_nz > 0) {
             hll->blocks[b] = convert_to_ELL(block_rows, N, block_nz, block_entries);
-        else
-            hll->blocks[b] = NULL; 
+        } else {
+            // Alloca un blocco vuoto
+            ELLPackMatrix *emptyBlock = (ELLPackMatrix*) malloc(sizeof(ELLPackMatrix));
+            emptyBlock->rows = block_rows;
+            emptyBlock->cols = N;
+            emptyBlock->nnz = 0;
+            emptyBlock->maxnz = 1;
+            emptyBlock->values = (double**) malloc(block_rows * sizeof(double*));
+            emptyBlock->col_indices = (int**) malloc(block_rows * sizeof(int*));
+            for (int i = 0; i < block_rows; i++) {
+                emptyBlock->values[i] = (double*) malloc(sizeof(double));
+                emptyBlock->col_indices[i] = (int*) malloc(sizeof(int));
+                emptyBlock->values[i][0] = 0.0;
+                emptyBlock->col_indices[i][0] = -1;
+            }
+            hll->blocks[b] = emptyBlock;
+        }
 
         free(block_entries);
     }
@@ -63,26 +78,3 @@ void print_HLL(HLLMatrix *H) {
     printf("HLL Matrix: %d blocchi, hack_size = %d\n", H->num_blocks, H->hack_size);
     printf("Ultimo blocco: %d righe\n", last_block_rows);
 }
-
-// idea: si potrebbe creare un kernel cuda che faccia questo lavoro da solo, con un for si calcola un blocco alla volta e questo ci rallenta molto
-// possiamo creare tutti quanti i pezzi qui e poi passarli al kernel per fare il ciclo direttamente da li dentro
-// void matvec_hll_cuda(HLLMatrix *H, double *x, double *y) {
-//     for (int b = 0; b < H->num_blocks; b++) {
-//         ELLPackMatrix *block = H->blocks[b];
-//         if (block == NULL) continue;  // Se il blocco è vuoto, salta questo blocco
-//         int block_rows = block->rows;
-//         int start_row = b * H->hack_size;
-//         double *block_y = (double*)malloc(block_rows * sizeof(double));
-
-//         // Computa il prodotto matrice-vettore per il blocco
-//         matvec_ellpack_cuda(block, x, block_y);
-
-//         // Aggiungi i risultati del blocco nel vettore y
-//         for (int i = 0; i < block_rows; i++) {
-//             y[start_row + i] += block_y[i];
-//         }
-
-//         free(block_y);
-//     }
-// }
-

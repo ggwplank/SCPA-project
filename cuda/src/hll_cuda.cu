@@ -33,14 +33,8 @@ __global__ void matvec_hll_kernel(double *values, int *col_indices, double *x, d
 void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     int num_blocks = H->num_blocks;
     int hack_size = H->hack_size;
-
-    // numero totale di righe nella matrice HLL
-    int total_rows = 0;
-    for (int b = 0; b < num_blocks; b++)
-        if (H->blocks[b] != NULL)
-            total_rows += H->blocks[b]->rows;
+    int total_rows = H->blocks[0]->cols;
     
-
     // Allocazione per la struttura lineare di tutti i blocchi ($$$ non possiamo unirlo a quello di sopra?)
     int total_values = 0;
     for (int b = 0; b < num_blocks; b++)
@@ -63,7 +57,7 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     for (int b = 0; b < num_blocks; b++) {
         ELLPackMatrix *block = H->blocks[b];
         if (block == NULL) continue;
-
+        
         h_block_offsets[b] = offset;  
         h_block_nnz[b] = block->maxnz;
         h_block_rows[b] = block->rows;
@@ -83,8 +77,8 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
 
     cudaMalloc((void **)&d_values, total_values * sizeof(double));
     cudaMalloc((void **)&d_col_indices, total_values * sizeof(int));
-    cudaMalloc((void **)&d_x, H->blocks[0]->cols * sizeof(double));
-    cudaMalloc((void **)&d_y, num_blocks * hack_size * sizeof(double));
+    cudaMalloc((void **)&d_x, total_rows * sizeof(double));
+    cudaMalloc((void **)&d_y, total_rows * sizeof(double));
     cudaMalloc((void **)&d_block_offsets, num_blocks * sizeof(int));
     cudaMalloc((void **)&d_block_nnz, num_blocks * sizeof(int));
     cudaMalloc((void **)&d_block_rows, num_blocks * sizeof(int));
@@ -92,7 +86,7 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     // Copia dei dati sulla GPU
     cudaMemcpy(d_values, h_values, total_values * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_col_indices, h_col_indices, total_values * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_x, x, H->blocks[0]->cols * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_x, x, total_rows * sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(d_block_offsets, h_block_offsets, num_blocks * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_block_nnz, h_block_nnz, num_blocks * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_block_rows, h_block_rows, num_blocks * sizeof(int), cudaMemcpyHostToDevice);
@@ -116,11 +110,11 @@ void matvec_hll_cuda(HLLMatrix *H, double *x, double *y, float *elapsed_time) {
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
 
+    // allocazione del tempo
+    cudaEventElapsedTime(elapsed_time, start, stop);
+
     // Copia del risultato dalla GPU alla CPU
     cudaMemcpy(y, d_y, total_rows * sizeof(double), cudaMemcpyDeviceToHost);
-
-    // allocazioen del tempo
-    cudaEventElapsedTime(elapsed_time, start, stop);
 
     // Pulizia della memoria
     cudaEventDestroy(start);

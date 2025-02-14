@@ -65,12 +65,10 @@ int main(int argc, char *argv[]) {
     else if (strcmp(mode, "-cudaHLL") == 0) {    
         printf("Conversione matrice in formato HLL con hack_size = %d...\n", HACK_SIZE);
         HLLMatrix *A_hll = convert_to_HLL(M, N, NZ, entries, HACK_SIZE);
+        print_HLL(A_hll);
 
         double *y_cuda_hll = allocate_result(M);
-
-        print_HLL(A_hll);
-        
-        printf("Moltiplicazione parallela con CUDA e formato CSR...\n");
+    
         get_performances_and_save_cuda((void (*)(void *, double *, double *, float *))matvec_hll_cuda,
         A_hll, x, y_cuda_hll,
         matrix_name, M, N, NZ,
