@@ -5,7 +5,7 @@
 #include "utils.h"
 
 #define WARP_SIZE 32
-#define BLOCK_SIZE 256
+#define BLOCK_SIZE 128
 
 __global__ void csr_mult_warp_cuda_kernel(int num_rows, int *d_row_ptr, int *d_col_indices, 
                                      double *d_values, double *d_x, double *d_y) {
