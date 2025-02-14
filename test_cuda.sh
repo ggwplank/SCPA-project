@@ -1,5 +1,7 @@
 #!/bin/bash
 
+module -s load gnu mpich cuda
+
 matrices=(
     "Sandia/adder_dcop_32/adder_dcop_32.mtx"
     "Schenk_AFE/af_1_k101/af_1_k101.mtx"
