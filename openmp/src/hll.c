@@ -45,18 +45,21 @@ HLLMatrix* convert_to_HLL(int M, int N, int NZ, MatrixEntry *entries, int hack_s
 }
 
 void omp_hll_mult(HLLMatrix *H, double *x, double *y) {
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic)
     for (int b = 0; b < H->num_blocks; b++) {
         ELLPackMatrix *block = H->blocks[b];
-        int start_row = b * H->hack_size;
 
-        for (int i = 0; i < block->rows; i++) {
+        int start_row = b * H->hack_size;
+        int rows = block->rows;
+        int maxnz = block->maxnz;
+
+        for (int i = 0; i < rows; i++) {
             double sum = 0.0;
 
-            for (int j = 0; j < block->maxnz; j++) {
-                if (block->col_indices[i][j] != -1)
-                    sum += block->values[i][j] * x[block->col_indices[i][j]];
-                
+            for (int j = 0; j < maxnz; j++) {
+                int col = block->col_indices[i][j];
+                if (col != -1)
+                    sum += block->values[i][j] * x[col];
             }
             y[start_row + i] = sum;
         }

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+module -s load gnu mpich cuda
+
 matrices=(
     "Sandia/adder_dcop_32/adder_dcop_32.mtx"
     "Schenk_AFE/af_1_k101/af_1_k101.mtx"
@@ -33,12 +35,11 @@ matrices=(
     "Williams/webbase-1M/webbase-1M.mtx"
     "HB/west2021/west2021.mtx"
 )
-modes=("-serial" "-ompCSR" "-ompHLL")
 
 THREADS=34
 
 echo ">>> Opening openmp..."
-cd openmp || exit 1  # Se fallisce, esce con errore
+cd openmp || exit 1 
 
 echo ">>> Cleaning..."
 make clean
@@ -47,6 +48,8 @@ echo ">>> Rimozione file performance e speedup..."
 rm -f performance.csv speedup.csv
 
 echo ">>> Building..."
+make all
+
 for mat in "${matrices[@]}"; do
     if [[ "$1" == "run" ]]; then
         make run MAT="../../../matrici/MM/$mat"
@@ -59,3 +62,5 @@ for mat in "${matrices[@]}"; do
 done
 
 cd ..
+
+./speedup_omp.sh

@@ -4,6 +4,8 @@
 
 #include "utils.h"
 
+#define CHUNK_SIZE 2^12
+
 // nel CSR gli elementi devono essere memorizzati riga per riga
 int compare_entries(const void *a, const void *b) {
     MatrixEntry *entryA = (MatrixEntry *)a;
@@ -87,16 +89,17 @@ void serial_csr_mult(CSRMatrix *A, double *x, double *y) {
 }
 
 void omp_csr_mult(CSRMatrix *A, double *x, double *y) {
-    #pragma omp parallel for schedule(dynamic, 3)
+    int j, col;
+    #pragma omp parallel for private(j, col) schedule(dynamic, CHUNK_SIZE)
     for (int i = 0; i < A->rows; i++) {
         double sum = 0.0;
         int row_start = A->row_ptr[i];
         int row_end = A->row_ptr[i + 1];
 
-        for (int j = row_start; j < row_end; j++)
-            sum += A->values[j] * x[A->col_indices[j]];
-        
-
+        for (j = row_start; j < row_end; j++) {
+            col = A->col_indices[j];
+            sum += A->values[j] * x[col];
+        }
         y[i] = sum;
     }
 }
