@@ -10,11 +10,8 @@ def compare_matrices(file_path1, file_path2, output_path):
     df1['avg_nnz_per_row'] = df1['NZ'] / df1['M']
     df1['density'] = df1['NZ'] / (df1['M'] * df1['N'])
 
-    # Filtra le matrici secondo la condizione specificata e fai una copia esplicita
-    df1_filtered = df1[(df1['avg_nnz_per_row'] < 25) | (df1['density'] > 1.5e-3)].copy()
-
-    # Calcola la grandezza della matrice
-    df1_filtered.loc[:, 'Size'] = df1_filtered['NZ'] / (df1_filtered['M'] * df1_filtered['N'])
+    # Filtra le matrici che NON rispettano la condizione
+    df1_filtered = df1[~((df1['avg_nnz_per_row'] < 25) | (df1['density'] > 1.5e-3))].copy()
 
     # Carica il secondo file CSV
     df2 = pd.read_csv(file_path2)
@@ -23,26 +20,19 @@ def compare_matrices(file_path1, file_path2, output_path):
     df2['avg_nnz_per_row'] = df2['NZ'] / df2['M']
     df2['density'] = df2['NZ'] / (df2['M'] * df2['N'])
 
-    # Filtra le matrici secondo la condizione specificata e fai una copia esplicita
-    df2_filtered = df2[(df2['avg_nnz_per_row'] < 25) | (df2['density'] > 1.5e-3)].copy()
+    # Filtra le matrici che NON rispettano la condizione
+    df2_filtered = df2[~((df2['avg_nnz_per_row'] < 25) | (df2['density'] > 1.5e-3))].copy()
 
-    # Calcola la grandezza della matrice
-    df2_filtered.loc[:, 'Size'] = df2_filtered['NZ'] / (df2_filtered['M'] * df2_filtered['N'])
-
-    # Ordina i dati per grandezza della matrice
-    df1_sorted = df1_filtered.sort_values(by='Size')
-    df2_sorted = df2_filtered.sort_values(by='Size')
-
-    # Seleziona solo le matrici comuni tra i due file
-    common_matrices = set(df1_sorted['Matrix']).intersection(set(df2_sorted['Matrix']))
+    # Trova le matrici comuni tra i due file
+    common_matrices = set(df1_filtered['Matrix']).intersection(set(df2_filtered['Matrix']))
 
     # Filtra entrambi i DataFrame per contenere solo le matrici comuni
-    df1_common = df1_sorted[df1_sorted['Matrix'].isin(common_matrices)]
-    df2_common = df2_sorted[df2_sorted['Matrix'].isin(common_matrices)]
+    df1_common = df1_filtered[df1_filtered['Matrix'].isin(common_matrices)].copy()
+    df2_common = df2_filtered[df2_filtered['Matrix'].isin(common_matrices)].copy()
 
-    # Ordina per grandezza della matrice
-    df1_common = df1_common.sort_values(by='Size')
-    df2_common = df2_common.sort_values(by='Size')
+    # Ordina alfabeticamente ignorando maiuscole e minuscole
+    df1_common = df1_common.sort_values(by='Matrix', key=lambda x: x.str.lower())
+    df2_common = df2_common.sort_values(by='Matrix', key=lambda x: x.str.lower())
 
     # Traccia il grafico a barre per confrontare le matrici
     plt.figure(figsize=(12, 6))
@@ -60,8 +50,8 @@ def compare_matrices(file_path1, file_path2, output_path):
     plt.xlabel("Matrice")
     plt.ylabel("Median GFlops")
 
-    # Rotazione delle etichette sull'asse X per una migliore leggibilità
-    plt.xticks(x, df1_common['Matrix'].str.replace('.mtx', '', regex=False), rotation=45, ha='right')
+    # Imposta le etichette sull'asse X in verticale
+    plt.xticks(x, df1_common['Matrix'].str.replace('.mtx', '', regex=False), rotation=90, ha='center')
 
     # Aggiungi la griglia per migliorare la leggibilità
     plt.grid(True, axis='y', linestyle='--', alpha=0.7)
@@ -82,5 +72,5 @@ def compare_matrices(file_path1, file_path2, output_path):
 # Esempio di utilizzo
 file_path1 = "performance-CSR-warp.csv"
 file_path2 = "performance-CSR.csv"
-output_path = "graphs/littleMAT-CSR-comaprison.png"
+output_path = "graphs/bigMAT-CSR-comparison.png"
 compare_matrices(file_path1, file_path2, output_path)
