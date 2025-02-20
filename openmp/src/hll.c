@@ -61,6 +61,7 @@ void omp_hll_mult(HLLMatrix *H, double *x, double *y) {
                 if (col != -1)
                     sum += block->values[i][j] * x[col];
             }
+
             y[start_row + i] = sum;
         }
     }
