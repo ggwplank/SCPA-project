@@ -4,7 +4,7 @@
 
 #include "utils.h"
 
-#define CHUNK_SIZE 2^12
+#define CHUNK_SIZE 2^14
 
 // nel CSR gli elementi devono essere memorizzati riga per riga
 int compare_entries(const void *a, const void *b) {
@@ -81,10 +81,9 @@ CSRMatrix* convert_to_CSR(int M, int N, int NZ, MatrixEntry *entries) {
 void serial_csr_mult(CSRMatrix *A, double *x, double *y) {
     for (int i = 0; i < A->rows; i++) {
         y[i] = 0.0;
-
-        for (int j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++)
-            y[i] += A->values[j] * x[A->col_indices[j]];
         
+        for (int j = A->row_ptr[i]; j < A->row_ptr[i + 1]; j++)
+            y[i] += A->values[j] * x[A->col_indices[j]];   
     }
 }
 

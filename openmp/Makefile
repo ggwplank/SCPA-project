@@ -35,9 +35,9 @@ clean:
 	rm -rf $(OBJ_DIR) $(EXECUTABLE) $(OPENMP_EXECUTABLE)
 
 run: $(EXECUTABLE)
-	./$(EXECUTABLE) ../.matrices/$(MAT) $(MODE) 
+	./$(EXECUTABLE) $(MAT) $(MODE) 
 
 run_openmp: $(OPENMP_EXECUTABLE)
-	./$(OPENMP_EXECUTABLE) ../.matrices/$(MAT) $(MODE) $(THREADS)
+	./$(OPENMP_EXECUTABLE) $(MAT) $(MODE) $(THREADS)
 
 .PHONY: all clean

@@ -36,7 +36,7 @@ matrices=(
     "HB/west2021/west2021.mtx"
 )
 
-THREADS=34
+THREADS=17
 
 echo ">>> Opening openmp..."
 cd openmp || exit 1 
