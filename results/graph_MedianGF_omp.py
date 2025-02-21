@@ -7,13 +7,13 @@ import seaborn as sns
 plt.style.use('ggplot')
 
 # Carica il file CSV
-df = pd.read_csv('performance-17.csv')
+df = pd.read_csv('performance-CUDA-128.csv')
 
-# Filtra solo i dati con Threads = 17 o 1 per "serial"
-df = df[(df['Threads'] == 17) | (df['Mode'] == 'serial')]
+# Rimuove l'estensione .mtx dalla colonna "Matrix"
+df["Matrix"] = df["Matrix"].str.replace(r'\.mtx$', '', regex=True)
 
 # Definisce l'ordine delle modalità
-mode_order = ["serial", "ompCSR", "ompHLL"]
+mode_order = ["serial", "cudaCSR", "cudaHLL"]
 df["Mode"] = pd.Categorical(df["Mode"], categories=mode_order, ordered=True)
 
 # Ordina le matrici alfabeticamente PRIMA di estrarre l'ordine

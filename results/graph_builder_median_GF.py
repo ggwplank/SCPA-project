@@ -7,7 +7,7 @@ import os
 def load_and_filter_data(filename, matrix_name):
     df = pd.read_csv(filename)
     # Filtra i dati usando gli indici delle colonne: 'Matrix' è la colonna 0 e 'Mode' è la colonna 4
-    df_filtered = df[(df.iloc[:, 0] == matrix_name) & (df.iloc[:, 4] == 'cudaCSR')]
+    df_filtered = df[(df.iloc[:, 0] == matrix_name) & (df.iloc[:, 4] == 'cudaHLL')]
     return df_filtered
 
 # Nomi dei file CSV
@@ -53,9 +53,8 @@ for idx, matrix_name in enumerate(matrix_names):
     plt.plot(block_sizes_filtered, avg_gflops_filtered, marker='o', linestyle='-', color=colors(idx), label=matrix_name)
 
 # Aggiungi titolo e etichette
-plt.title('AvgGFlops per tutte le matrici')
 plt.xlabel('Block Size')
-plt.ylabel('Avg GFlops')
+plt.ylabel('Median GFlops')
 plt.grid(True)
 plt.xticks(block_sizes)
 
@@ -70,7 +69,7 @@ if not os.path.exists('graphs'):
     os.makedirs('graphs')
 
 # Salva il grafico nella cartella 'graphs'
-plt.savefig('graphs/median_gflops_plot-CSR.png')
+plt.savefig('graphs/median_gflops_plot-HLL.png')
 
 # Mostra il grafico
 plt.show()
