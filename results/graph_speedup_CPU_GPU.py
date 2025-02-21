@@ -1,4 +1,7 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 
 # Carica i file CSV
 cpu_file = "performance-OMP-17.csv" # Sostituisci con il percorso reale
@@ -34,4 +37,29 @@ print(merged_df)
 # Salva il risultato in un file CSV
 merged_df.to_csv("speedup_results.csv", index=False)
 
+# Carica il file CSV con i risultati
+result_file = "speedup_results.csv"  # Sostituisci con il percorso corretto
+results_df = pd.read_csv(result_file)
 
+# Filtra solo le modalità CUDA CSR e CUDA HLL
+results_df = results_df[results_df["Mode"].isin(["cudaCSR", "cudaHLL"])]
+
+# Rinomina le modalità per la legenda
+results_df["Mode"] = results_df["Mode"].replace({"cudaCSR": "CSR", "cudaHLL": "HLL"})
+
+# Ordina i dati per nome matrice ignorando maiuscole/minuscole
+results_df = results_df.sort_values(by="Matrix", key=lambda x: x.str.lower())
+
+# Creazione del grafico con Seaborn
+plt.figure(figsize=(12, 6))
+sns.barplot(data=results_df, x="Matrix", y="Speedup", hue="Mode", palette={"CSR": "red", "HLL": "blue"})
+
+# Personalizzazioni
+plt.xticks(rotation=90, ha="center", fontsize=10)  # Nomi matrici verticali
+plt.ylabel("Speedup (CPU Time / GPU Time)")
+plt.legend(title="Mode")
+
+# Layout e salvataggio
+plt.tight_layout()
+plt.savefig("speedup_comparison_sns.png", dpi=300)
+plt.show()
